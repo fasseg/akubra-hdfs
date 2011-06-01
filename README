@@ -1,6 +1,3 @@
-Akubra HDFS 
-------------------------------------------------------------
-
 Akubra (https://wiki.duraspace.org/display/AKUBRA/Akubra+Project) is a file system abstraction layer
 which is used by fedora-commons (http://fedora-commons.org/)
 
@@ -26,3 +23,6 @@ and 'fsDataStreamStore' to use the class 'de.fiz.akubra.hdfs.HDFSBlobStore':
   </bean>
 
 
+akubra-hdfs is licensed under the Apache License 2.0
+
+       http://www.apache.org/licenses/LICENSE-2.0
