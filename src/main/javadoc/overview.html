@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+  <HEAD>
+    <TITLE>akubra-hdfs</TITLE>
+  </HEAD>
+  <BODY>
+	<h4>Use akubra-hdfs with fedora-comons</h4>
+	
+    After Installation of fedora 3.4.2 the following file will have to be altered in order to use akubra-hdfs:
+    <b>FEDORA_HOME/server/config/akubra-llstore.xml</b>
+     In particular the following Spring beans 
+ 	<pre>
+	  &lt;bean name="fsObjectStore"
+	        class="org.akubraproject.fs.FSBlobStore"
+	        singleton="true"&gt;
+	    &lt;constructor-arg value="urn:example.org:fsObjectStore"/&gt;
+	    &lt;constructor-arg value="/home/ruckus/dev/apps/fedora/data/objectStore"/&gt;
+	  &lt;/bean&gt;
+
+	  &lt;bean name="fsDatastreamStore"
+	        class="org.akubraproject.fs.FSBlobStore"
+	        singleton="true"&gt;
+	    &lt;constructor-arg value="urn:example.org:fsDatastreamStore"/&gt;
+	    &lt;constructor-arg value="/home/ruckus/dev/apps/fedora/data/datastreamStore"/&gt;
+	  &lt;/bean&gt;
+ 	</pre>
+	will have to be replaced by these:
+	<pre>
+	  &lt;bean name="fsObjectStore"
+	        class="de.fiz.akubra.hdfs.HDFSBlobStore"
+	        singleton="true"&gt;
+	    &lt;constructor-arg value="hdfs://localhost:9000/fedora/objects/"/&gt;
+	  &lt;/bean&gt;
+	  &lt;bean name="fsDatastreamStore"
+	        class="de.fiz.akubra.hdfs.HDFSBlobStore"
+	        singleton="true"&gt;
+	    &lt;constructor-arg value="hdfs://localhost:9000/fedora/datastreams/"/&gt;
+	  &lt;/bean&gt;
+	</pre>
+  </BODY>
+</HTML>
