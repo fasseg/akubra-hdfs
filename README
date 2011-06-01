@@ -1,0 +1,28 @@
+Akubra HDFS 
+------------------------------------------------------------
+
+Akubra (https://wiki.duraspace.org/display/AKUBRA/Akubra+Project) is a file system abstraction layer
+which is used by fedora-commons (http://fedora-commons.org/)
+
+This implementation enables fedora-commons to use a Hadoop filesystem (http://hadoop.apache.org/)
+as an underlying object and datastream storage.
+
+In order to use akubra-hdfs with a fedora-commons repository it's enough to change the file 
+$FEDORA_HOME/server/config/akubra-llstore.xml and edit the two beans 'fsObjectStore' 
+and 'fsDataStreamStore' to use the class 'de.fiz.akubra.hdfs.HDFSBlobStore':
+
+  <bean name="fsObjectStore"
+        class="de.fiz.akubra.hdfs.HDFSBlobStore"
+        singleton="true">
+    <!-- the hdfs namenode URI goes here -->
+    <constructor-arg value="hdfs://localhost:9000/fedora/objects/"/>
+  </bean>
+
+  <bean name="fsDatastreamStore"
+        class="de.fiz.akubra.hdfs.HDFSBlobStore"
+        singleton="true">
+    <!-- the hdfs namenode URI goes here -->
+    <constructor-arg value="hdfs://localhost:9000/fedora/datastreams/"/>
+  </bean>
+
+
