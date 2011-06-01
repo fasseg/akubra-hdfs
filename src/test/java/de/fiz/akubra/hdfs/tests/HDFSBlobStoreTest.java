@@ -19,17 +19,16 @@ package de.fiz.akubra.hdfs.tests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.easymock.EasyMock.*;
 
 import java.net.URI;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.fiz.akubra.hdfs.HDFSBlobStore;
-import de.fiz.akubra.hdfs.HDFSBlobStoreConnection;
 
 public class HDFSBlobStoreTest {
 
@@ -38,19 +37,24 @@ public class HDFSBlobStoreTest {
 	
 	@BeforeClass
 	public static void setup() throws Exception{
-		storeUri=new URI("hdfs://localhost:9000/");
+		storeUri=new URI("hdfs://example.com:9000");
 	}
-	
+	@Before
+	public void init(){
+		mockFs=createMock(FileSystem.class);
+	}
 	
 	@Test
 	public void testHDFSBlobStoreString() throws Exception{
 		HDFSBlobStore store=new HDFSBlobStore(storeUri.toASCIIString());
+		store.setFileSystem(mockFs);
 		assertNotNull(store);
 	}
 
 	@Test
 	public void testGetId()throws Exception {
 		HDFSBlobStore store=new HDFSBlobStore(storeUri.toASCIIString());
+		store.setFileSystem(mockFs);
 		assertNotNull(store);
 		assertEquals(storeUri, store.getId());
 	}
@@ -58,6 +62,7 @@ public class HDFSBlobStoreTest {
 	@Test
 	public void testOpenConnection() throws Exception{
 		HDFSBlobStore store=new HDFSBlobStore(storeUri.toASCIIString());
+		store.setFileSystem(mockFs);
 		assertNotNull(store.openConnection(null, null));
 		assertFalse(store.openConnection(null, null).isClosed());
 	}

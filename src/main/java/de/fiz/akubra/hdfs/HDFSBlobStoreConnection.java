@@ -32,12 +32,9 @@ import org.akubraproject.BlobStore;
 import org.akubraproject.BlobStoreConnection;
 import org.akubraproject.UnsupportedIdException;
 import org.apache.commons.io.IOUtils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of {@link BlobStoreConnection} that represents a connection to
@@ -48,10 +45,8 @@ import org.slf4j.LoggerFactory;
  */
 public class HDFSBlobStoreConnection implements BlobStoreConnection {
 
-	private static final Logger log = LoggerFactory.getLogger(HDFSBlobStoreConnection.class);
-
 	private final HDFSBlobStore store;
-	private boolean closed=false;
+	private boolean closed = false;
 
 	/**
 	 * create a new {@link HDFSBlobStoreConnection} to specified HDFs namenode
@@ -70,7 +65,7 @@ public class HDFSBlobStoreConnection implements BlobStoreConnection {
 	 * close this connection
 	 */
 	public void close() {
-		this.closed=true;
+		this.closed = true;
 	}
 
 	/**
@@ -103,15 +98,17 @@ public class HDFSBlobStoreConnection implements BlobStoreConnection {
 	 */
 	public Blob getBlob(final InputStream in, final long estimatedSize, final Map<String, String> hints) throws IOException {
 		HDFSBlob blob;
+		OutputStream out = null;
 		try {
 			blob = new HDFSBlob(new URI(this.store.getId() + UUID.randomUUID().toString()), this);
-			OutputStream out = blob.openOutputStream(estimatedSize, false);
+			out = blob.openOutputStream(estimatedSize, false);
 			IOUtils.copy(in, out);
-			in.close();
-			out.close();
 			return blob;
 		} catch (URISyntaxException e) {
 			throw new IOException(e);
+		} finally {
+			IOUtils.closeQuietly(in);
+			IOUtils.closeQuietly(out);
 		}
 	}
 

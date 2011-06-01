@@ -19,8 +19,6 @@ package de.fiz.akubra.hdfs;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import javax.transaction.Transaction;
@@ -29,8 +27,6 @@ import org.akubraproject.BlobStore;
 import org.akubraproject.BlobStoreConnection;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * {@link BlobStore} implementation for the Hadoop filesystem.
@@ -39,7 +35,6 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class HDFSBlobStore implements BlobStore {
-	private static final Logger log = LoggerFactory.getLogger(HDFSBlobStore.class);
 
 	private final URI id;
 	private FileSystem fileSystem;

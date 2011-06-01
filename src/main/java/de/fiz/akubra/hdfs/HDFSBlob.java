@@ -31,8 +31,6 @@ import org.akubraproject.UnsupportedIdException;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of a {@link Blob} for using the Hadoop filesystem
@@ -43,9 +41,7 @@ import org.slf4j.LoggerFactory;
 public class HDFSBlob implements Blob {
 	private final Path path;
 	private final URI uri;
-	private FileSystem hdfs;
 	private HDFSBlobStoreConnection conn;
-	private static final Logger log = LoggerFactory.getLogger(HDFSBlob.class);
 
 	/**
 	 * creates a new {@link HDFSBlob} using the supplied uri as an identifier
@@ -111,9 +107,7 @@ public class HDFSBlob implements Blob {
 			return this.getFileSystem().exists(path);	
 		}catch(IOException e){
 			// try reconnect
-			log.debug(e.getLocalizedMessage() + " has been thrown trying to reconnect...",e);
 			this.conn=(HDFSBlobStoreConnection) this.getConnection().getBlobStore().openConnection(null, null);
-			this.hdfs=this.conn.getFileSystem();
 			return this.getFileSystem().exists(path);
 		}
 	}
@@ -156,7 +150,6 @@ public class HDFSBlob implements Blob {
 	 *             if this {@link HDFSBlob} does not exist
 	 */
 	public long getSize() throws IOException, MissingBlobException {
-		log.debug("checking size of " + this.getId().toASCIIString());
 		if (!this.exists()) {
 			throw new MissingBlobException(uri);
 		}
@@ -179,7 +172,6 @@ public class HDFSBlob implements Blob {
 	 *             if this {@link HDFSBlob} does not exist
 	 */
 	public Blob moveTo(final URI toUri, final Map<String, String> hints) throws DuplicateBlobException, IOException, MissingBlobException {
-		log.debug("moving blob " + this.getId().toASCIIString() + " to " + toUri.toASCIIString());
 		if (!this.exists()) {
 			throw new MissingBlobException(uri);
 		}
@@ -191,11 +183,18 @@ public class HDFSBlob implements Blob {
 			throw new DuplicateBlobException(toUri);
 		}
 		// copy the contents of this blob into the newly created blob
-		InputStream in = this.openInputStream();
-		OutputStream out = newBlob.openOutputStream(this.getSize(), false);
-		IOUtils.copy(in, out);
-		in.close();
-		out.close();
+		InputStream in=null;
+		OutputStream out=null;
+		try{
+			in = this.openInputStream();
+			out = newBlob.openOutputStream(this.getSize(), false);
+			IOUtils.copy(in, out);
+		}catch(IOException e){
+			throw e;
+		}finally{
+			IOUtils.closeQuietly(in);
+			IOUtils.closeQuietly(out);
+		}
 		this.delete();
 		return newBlob;
 	}

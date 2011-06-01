@@ -17,7 +17,6 @@
 package de.fiz.akubra.hdfs.tests;
 
 import static org.easymock.EasyMock.anyBoolean;
-import static org.easymock.EasyMock.anyInt;
 import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
@@ -25,11 +24,9 @@ import static org.easymock.EasyMock.replay;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 import java.util.Random;
@@ -142,6 +139,7 @@ public class HDFSBlobTest {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void testMoveTo() throws Exception {
 		URI toUri = new URI(blobStoreUri.toASCIIString() + "6f/test_move");
 		expect(mockConnection.getBlobStore()).andReturn(mockStore).times(2);
