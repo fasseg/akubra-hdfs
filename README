@@ -12,14 +12,14 @@ and 'fsDataStreamStore' to use the class 'de.fiz.akubra.hdfs.HDFSBlobStore':
         class="de.fiz.akubra.hdfs.HDFSBlobStore"
         singleton="true">
     <!-- the hdfs namenode URI goes here -->
-    <constructor-arg value="hdfs://localhost:9000/fedora/objects/"/>
+    <constructor-arg value="hdfs://localhost:9000/fedora/objects"/>
   </bean>
 
   <bean name="fsDatastreamStore"
         class="de.fiz.akubra.hdfs.HDFSBlobStore"
         singleton="true">
     <!-- the hdfs namenode URI goes here -->
-    <constructor-arg value="hdfs://localhost:9000/fedora/datastreams/"/>
+    <constructor-arg value="hdfs://localhost:9000/fedora/datastreams"/>
   </bean>
 
 
