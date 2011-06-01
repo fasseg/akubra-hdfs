@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Implementation of a {@link Blob} using HDFS as an underlying FileSystem
+ * Implementation of a {@link Blob} for using the Hadoop filesystem
  * 
  * @author frank asseg
  * 
