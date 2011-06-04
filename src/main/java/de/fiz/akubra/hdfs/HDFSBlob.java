@@ -38,7 +38,7 @@ import org.apache.hadoop.fs.Path;
  * @author frank asseg
  * 
  */
-public class HDFSBlob implements Blob {
+class HDFSBlob implements Blob {
 	private final Path path;
 	private final URI uri;
 	private HDFSBlobStoreConnection conn;

@@ -14,7 +14,7 @@
    limitations under the License.
 
  */
-package de.fiz.akubra.hdfs.tests;
+package de.fiz.akubra.hdfs;
 
 
 import static org.easymock.EasyMock.anyObject;
@@ -26,6 +26,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Random;
 
@@ -51,7 +52,9 @@ public class HDFSBlobStoreConnectionTest {
 	public void setUp() throws Exception {
 		mockStore = createMock(HDFSBlobStore.class);
 		mockFs = createMock(FileSystem.class);
-		mockStore.setFileSystem(mockFs);
+		Field f = HDFSBlobStore.class.getDeclaredField("fileSystem");
+		f.setAccessible(true);
+		f.set(mockStore, mockFs);
 	}
 
 	@Test

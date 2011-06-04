@@ -43,7 +43,7 @@ import org.apache.hadoop.fs.Path;
  * @author frank asseg
  * 
  */
-public class HDFSBlobStoreConnection implements BlobStoreConnection {
+class HDFSBlobStoreConnection implements BlobStoreConnection {
 
 	private final HDFSBlobStore store;
 	private boolean closed = false;

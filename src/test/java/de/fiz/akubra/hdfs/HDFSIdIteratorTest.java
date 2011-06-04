@@ -14,7 +14,7 @@
    limitations under the License.
 
  */
-package de.fiz.akubra.hdfs.tests;
+package de.fiz.akubra.hdfs;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;

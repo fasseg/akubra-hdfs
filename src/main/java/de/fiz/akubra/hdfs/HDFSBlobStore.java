@@ -81,12 +81,9 @@ public class HDFSBlobStore implements BlobStore {
 
 	public FileSystem getFileSystem() throws IOException {
 		if (this.fileSystem == null) {
-			setFileSystem(FileSystem.get(this.getId(), new Configuration()));
+			this.fileSystem=FileSystem.get(this.getId(), new Configuration());
 		}
 		return this.fileSystem;
 	}
 
-	public void setFileSystem(FileSystem fileSystem) {
-		this.fileSystem = fileSystem;
-	}
 }

@@ -14,7 +14,7 @@
    limitations under the License.
 
  */
-package de.fiz.akubra.hdfs.tests;
+package de.fiz.akubra.hdfs;
 
 import static org.easymock.EasyMock.anyBoolean;
 import static org.easymock.EasyMock.anyObject;

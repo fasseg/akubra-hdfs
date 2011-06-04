@@ -14,13 +14,14 @@
    limitations under the License.
 
  */
-package de.fiz.akubra.hdfs.tests;
+package de.fiz.akubra.hdfs;
 
+import static org.easymock.EasyMock.createMock;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.easymock.EasyMock.*;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -34,43 +35,39 @@ public class HDFSBlobStoreTest {
 
 	private static URI storeUri;
 	private FileSystem mockFs;
-	
+	private HDFSBlobStore store;
+
 	@BeforeClass
-	public static void setup() throws Exception{
-		storeUri=new URI("hdfs://example.com:9000");
+	public static void setup() throws Exception {
+		storeUri = new URI("hdfs://example.com:9000");
 	}
+
 	@Before
-	public void init(){
-		mockFs=createMock(FileSystem.class);
+	public void init() throws Exception {
+		mockFs = createMock(FileSystem.class);
+		store = new HDFSBlobStore(storeUri.toASCIIString());
+		Field f = HDFSBlobStore.class.getDeclaredField("fileSystem");
+		f.setAccessible(true);
+		f.set(store, mockFs);
 	}
-	
+
 	@Test
-	public void testHDFSBlobStoreString() throws Exception{
-		HDFSBlobStore store=new HDFSBlobStore(storeUri.toASCIIString());
-		store.setFileSystem(mockFs);
+	public void testHDFSBlobStoreString() throws Exception {
 		assertNotNull(store);
 	}
 
 	@Test
-	public void testGetId()throws Exception {
-		HDFSBlobStore store=new HDFSBlobStore(storeUri.toASCIIString());
-		store.setFileSystem(mockFs);
+	public void testGetId() throws Exception {
+		HDFSBlobStore store = new HDFSBlobStore(storeUri.toASCIIString());
 		assertNotNull(store);
 		assertEquals(storeUri, store.getId());
 	}
 
 	@Test
-	public void testOpenConnection() throws Exception{
-		HDFSBlobStore store=new HDFSBlobStore(storeUri.toASCIIString());
-		store.setFileSystem(mockFs);
+	public void testOpenConnection() throws Exception {
+		HDFSBlobStore store = new HDFSBlobStore(storeUri.toASCIIString());
 		assertNotNull(store.openConnection(null, null));
 		assertFalse(store.openConnection(null, null).isClosed());
 	}
 
-	@Test
-	public void testGetFileSystem() throws Exception{
-		HDFSBlobStore store=new HDFSBlobStore(storeUri.toASCIIString());
-		store.setFileSystem(mockFs);
-		assertNotNull(store.getFileSystem());
-	}
 }
