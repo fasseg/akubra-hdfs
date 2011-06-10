@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Map;
 
 import org.akubraproject.Blob;
@@ -31,6 +30,8 @@ import org.akubraproject.UnsupportedIdException;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of a {@link Blob} for using the Hadoop filesystem
@@ -42,6 +43,8 @@ class HDFSBlob implements Blob {
 	private final Path path;
 	private final URI uri;
 	private HDFSBlobStoreConnection conn;
+	private URI storeId;
+	private static final Logger log = LoggerFactory.getLogger(HDFSBlob.class);
 
 	/**
 	 * creates a new {@link HDFSBlob} using the supplied uri as an identifier
@@ -54,36 +57,11 @@ class HDFSBlob implements Blob {
 	 *            manipulate this {@link HDFSBlob}
 	 * @throws UnsupportedIdException
 	 */
-	public HDFSBlob(final URI uri, final HDFSBlobStoreConnection conn) throws UnsupportedIdException {
-		if (uri.getScheme() == null) {
-			// seems the supplied uri is invalid and doesn't include a scheme
-			// like "http" or "file"
-			throw new UnsupportedIdException(uri);
-		}
+	public HDFSBlob(final URI uri, final HDFSBlobStoreConnection conn){
 		this.conn = conn;
-		try {
-			if (uri.getPath() == null && uri.toString().startsWith("file:")) {
-				// from:
-				// https://groups.google.com/group/akubra-dev/browse_thread/thread/0c4127b3f69073ac
-				// (a) "file:relative/path"
-				// This syntax is rfc3986-compliant, but violates rfc1738. Of course,
-				// there's a great tradition of violating rfc1738. In this case, the
-				// implication is that generic URI parsers will have no problem, but
-				// those that attempt to validate file: URIs with scheme-specific
-				// syntax rules may barf.
-				this.uri = new URI(conn.getBlobStore().getId() + (conn.getBlobStore().getId().toASCIIString().endsWith("/") ? "" : "/")
-						+ uri.getRawSchemeSpecificPart());
-			} else {
-				// concatenate the path to the blob with the store id which
-				// should be something
-				// like "hdfs://example.com:9000/"
-				this.uri = uri;
-			}
-			this.path = new Path(this.uri.toASCIIString());
-		} catch (URISyntaxException e) {
-			// hey, thats not an URI!
-			throw new UnsupportedIdException(uri, e.getLocalizedMessage());
-		}
+		this.storeId = this.conn.getBlobStore().getId();
+		this.uri=uri;
+		this.path = new Path(this.storeId.toASCIIString() + "/" + this.uri.getRawSchemeSpecificPart());
 	}
 
 	/**
@@ -108,6 +86,7 @@ class HDFSBlob implements Blob {
 		}catch(IOException e){
 			// try reconnect
 			this.conn=(HDFSBlobStoreConnection) this.getConnection().getBlobStore().openConnection(null, null);
+			this.storeId=this.conn.getBlobStore().getId();
 			return this.getFileSystem().exists(path);
 		}
 	}

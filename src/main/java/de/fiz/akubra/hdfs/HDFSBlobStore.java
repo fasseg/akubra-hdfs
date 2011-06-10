@@ -48,8 +48,8 @@ public class HDFSBlobStore implements BlobStore {
 	 * @throws URISyntaxException
 	 *             if the supplied {@link URI} was not valid
 	 */
-	public HDFSBlobStore(final String uri) throws URISyntaxException {
-		this.id = new URI(uri);
+	public HDFSBlobStore(final URI uri){
+		this.id = uri;
 	}
 
 	/**
@@ -76,6 +76,9 @@ public class HDFSBlobStore implements BlobStore {
 	 *             if the operation did not succeed
 	 */
 	public BlobStoreConnection openConnection(final Transaction tx, final Map<String, String> hints) throws UnsupportedOperationException, IOException {
+		if (tx!=null){
+			throw new UnsupportedOperationException("Transactions are not supported");
+		}
 		return new HDFSBlobStoreConnection(this);
 	}
 

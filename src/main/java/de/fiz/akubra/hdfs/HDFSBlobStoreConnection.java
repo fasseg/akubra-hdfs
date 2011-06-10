@@ -16,6 +16,7 @@
  */
 package de.fiz.akubra.hdfs;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -35,6 +36,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of {@link BlobStoreConnection} that represents a connection to
@@ -47,6 +50,7 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 
 	private final HDFSBlobStore store;
 	private boolean closed = false;
+	private static final Logger log = LoggerFactory.getLogger(HDFSBlobStoreConnection.class);
 
 	/**
 	 * create a new {@link HDFSBlobStoreConnection} to specified HDFs namenode
@@ -78,7 +82,17 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 	 * @throws UnsupportedIdException
 	 *             if the supplied {@link URI} was not valid
 	 */
-	public Blob getBlob(final URI uri, final Map<String, String> hints) throws UnsupportedIdException {
+	public Blob getBlob(final URI uri, final Map<String, String> hints) throws UnsupportedIdException,IOException {
+		if (uri == null) {
+			URI tmp=URI.create("file:" + UUID.randomUUID().toString());
+			log.debug("creating new Blob uri " + tmp.toASCIIString());
+			//return getBlob(new ByteArrayInputStream(new byte[0]),0, null);
+			return new HDFSBlob(tmp, this);
+		}
+		log.debug("fetching blob " + uri.toASCIIString());
+		if (!uri.toASCIIString().startsWith("file:")) {
+			throw new UnsupportedIdException(uri, "URIs have to start with 'file:'");
+		}
 		HDFSBlob blob = new HDFSBlob(uri, this);
 		return blob;
 	}
@@ -97,15 +111,17 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 	 *             if the operation did not succeed
 	 */
 	public Blob getBlob(final InputStream in, final long estimatedSize, final Map<String, String> hints) throws IOException {
+		if (in == null) {
+			throw new NullPointerException("inputstream can not be null");
+		}
 		HDFSBlob blob;
 		OutputStream out = null;
 		try {
-			blob = new HDFSBlob(new URI(this.store.getId() + UUID.randomUUID().toString()), this);
+			blob = new HDFSBlob(URI.create("file:" + UUID.randomUUID().toString()), this);
+			log.debug("creating file with uri "+ blob.getId().toASCIIString());
 			out = blob.openOutputStream(estimatedSize, false);
 			IOUtils.copy(in, out);
 			return blob;
-		} catch (URISyntaxException e) {
-			throw new IOException(e);
 		} finally {
 			IOUtils.closeQuietly(in);
 			IOUtils.closeQuietly(out);
@@ -139,20 +155,35 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 	 *             if the operation did not succeed
 	 */
 	public Iterator<URI> listBlobIds(final String filterPrefix) throws IOException {
-		return new HDFSIdIterator(getFiles(new Path(filterPrefix), new ArrayList<FileStatus>()));
+		if (filterPrefix==null || filterPrefix.length() == 0){
+			// complete filesystem scan
+			return new HDFSIdIterator(getFiles(new Path(this.store.getId().toASCIIString() + "/"), new ArrayList<FileStatus>(), true));
+		}
+		int delim = filterPrefix.lastIndexOf('/');
+		List<FileStatus> files=new ArrayList<FileStatus>();
+		// check all the files in the path vs. the filter
+		Path path=new Path(this.store.getId().toASCIIString() + "/" + (delim > -1 ? filterPrefix.substring(0, delim) : ""));
+		List<FileStatus> tmpFiles = getFiles(path, new ArrayList<FileStatus>(), false);
+		for (FileStatus f : tmpFiles) {
+			log.debug("checking name to add to filter " + f.getPath().getName());	
+			if (f.getPath().getName().startsWith(filterPrefix)){
+				files.add(f);
+			}
+		}
+		return new HDFSIdIterator(files);
 	}
 
 	/*
 	 * Utility method for recursively fetching the directory contents in the
 	 * hadoop filesystem. Calls itself on the subdirectories
 	 */
-	private List<FileStatus> getFiles(final Path p, List<FileStatus> target) throws IOException {
+	private List<FileStatus> getFiles(final Path p, List<FileStatus> target, boolean recursive) throws IOException {
 		for (FileStatus f : getFileSystem().listStatus(p)) {
 			if (f.isFile()) {
 				target.add(f);
 			}
-			if (f.isDirectory()) {
-				getFiles(f.getPath(), target);
+			if (f.isDirectory() && recursive) {
+				getFiles(f.getPath(), target, recursive);
 			}
 		}
 		return target;

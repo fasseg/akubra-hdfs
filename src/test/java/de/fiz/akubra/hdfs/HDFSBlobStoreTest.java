@@ -45,7 +45,7 @@ public class HDFSBlobStoreTest {
 	@Before
 	public void init() throws Exception {
 		mockFs = createMock(FileSystem.class);
-		store = new HDFSBlobStore(storeUri.toASCIIString());
+		store = new HDFSBlobStore(storeUri);
 		Field f = HDFSBlobStore.class.getDeclaredField("fileSystem");
 		f.setAccessible(true);
 		f.set(store, mockFs);
@@ -58,14 +58,14 @@ public class HDFSBlobStoreTest {
 
 	@Test
 	public void testGetId() throws Exception {
-		HDFSBlobStore store = new HDFSBlobStore(storeUri.toASCIIString());
+		HDFSBlobStore store = new HDFSBlobStore(storeUri);
 		assertNotNull(store);
 		assertEquals(storeUri, store.getId());
 	}
 
 	@Test
 	public void testOpenConnection() throws Exception {
-		HDFSBlobStore store = new HDFSBlobStore(storeUri.toASCIIString());
+		HDFSBlobStore store = new HDFSBlobStore(storeUri);
 		assertNotNull(store.openConnection(null, null));
 		assertFalse(store.openConnection(null, null).isClosed());
 	}

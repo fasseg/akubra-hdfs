@@ -74,7 +74,7 @@ public class HDFSBlobStoreConnectionTest {
 
 	@Test
 	public void testGetBlob1() throws Exception {
-		expect(mockStore.getId()).andReturn(new URI("hdfs://localhost:9000/")).times(2);
+		expect(mockStore.getId()).andReturn(new URI("hdfs://localhost:9000/")).times(3);
 		replay(mockStore, mockFs);
 		HDFSBlobStoreConnection connection = new HDFSBlobStoreConnection(mockStore);
 		HDFSBlob b = (HDFSBlob) connection.getBlob(new URI("file:test"), null);
@@ -119,8 +119,9 @@ public class HDFSBlobStoreConnectionTest {
 
 	@Test
 	public void testListBlobIds() throws Exception{
-		expect(mockStore.getFileSystem()).andReturn(mockFs);
-		expect(mockFs.listStatus((Path) anyObject())).andReturn(createTestFileStatus());
+		expect(mockFs.listStatus((Path) anyObject())).andReturn(createTestFileStatus()).times(2);
+		expect(mockStore.getId()).andReturn(URI.create("hdfs://localhost:9000/")).times(2);
+		expect(mockStore.getFileSystem()).andReturn(mockFs).times(2);
 		replay(mockStore, mockFs);
 		HDFSBlobStoreConnection connection = new HDFSBlobStoreConnection(mockStore);
 		HDFSIdIterator it=(HDFSIdIterator) connection.listBlobIds("/");
