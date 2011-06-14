@@ -24,13 +24,13 @@ import java.util.List;
 import org.apache.hadoop.fs.FileStatus;
 
 /**
- * An {@link Iterator} implementation for the {@link HDFSBlobStoreConnection} implementation 
+ * An very simple {@link Iterator} implementation for the {@link HDFSBlobStoreConnection}
  * @author frank asseg
  *
  */
 public class HDFSIdIterator implements Iterator<URI> {
 
-	private final List<FileStatus> files;
+	private final List<URI> uris;
 	private final int len;
 	private int currentIndex = 0;
 
@@ -38,8 +38,8 @@ public class HDFSIdIterator implements Iterator<URI> {
 	 * create a new {@link HDFSIdIterator} based on the supplied list
 	 * @param list the {@link FileStatus} list to be iterated over
 	 */
-	public HDFSIdIterator(final List<FileStatus> list) {
-		this.files = list;
+	public HDFSIdIterator(final List<URI> list) {
+		this.uris = list;
 		len = list.size();
 	}
 
@@ -50,7 +50,7 @@ public class HDFSIdIterator implements Iterator<URI> {
 
 	@Override
 	public URI next() {
-		return URI.create("hdfs:" + files.get(currentIndex++).getPath().getName());
+		return uris.get(currentIndex++);
 	}
 
 	@Override

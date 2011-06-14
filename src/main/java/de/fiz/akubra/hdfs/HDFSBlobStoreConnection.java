@@ -67,11 +67,11 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 	/**
 	 * close this connection
 	 */
-	public void close(){
+	public void close() {
 		this.closed = true;
-		try{
+		try {
 			getFileSystem().close();
-		}catch(IOException e){
+		} catch (IOException e) {
 			log.error("Exception while closing hdfs connection");
 		}
 	}
@@ -86,11 +86,11 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 	 * @throws UnsupportedIdException
 	 *             if the supplied {@link URI} was not valid
 	 */
-	public Blob getBlob(final URI uri, final Map<String, String> hints) throws UnsupportedIdException,IOException {
+	public Blob getBlob(final URI uri, final Map<String, String> hints) throws UnsupportedIdException, IOException {
 		if (uri == null) {
-			URI tmp=URI.create("hdfs:" + UUID.randomUUID().toString());
+			URI tmp = URI.create("hdfs:" + UUID.randomUUID().toString());
 			log.debug("creating new Blob uri " + tmp.toASCIIString());
-			//return getBlob(new ByteArrayInputStream(new byte[0]),0, null);
+			// return getBlob(new ByteArrayInputStream(new byte[0]),0, null);
 			return new HDFSBlob(tmp, this);
 		}
 		log.debug("fetching blob " + uri.toASCIIString());
@@ -122,7 +122,7 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 		OutputStream out = null;
 		try {
 			blob = new HDFSBlob(URI.create("hdfs:" + UUID.randomUUID().toString()), this);
-			log.debug("creating file with uri "+ blob.getId().toASCIIString());
+			log.debug("creating file with uri " + blob.getId().toASCIIString());
 			out = blob.openOutputStream(estimatedSize, false);
 			IOUtils.copy(in, out);
 			return blob;
@@ -159,35 +159,29 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 	 *             if the operation did not succeed
 	 */
 	public Iterator<URI> listBlobIds(final String filterPrefix) throws IOException {
-		if (filterPrefix==null || filterPrefix.length() == 0){
+		if (filterPrefix == null || filterPrefix.length() == 0) {
 			// complete filesystem scan
-			return new HDFSIdIterator(getFiles(new Path(this.store.getId().toASCIIString() + "/"), new ArrayList<FileStatus>(), true));
+			return new HDFSIdIterator(getFiles(new Path(this.store.getId().toASCIIString() + "/"), null));
 		}
-		int delim = filterPrefix.lastIndexOf('/');
-		List<FileStatus> files=new ArrayList<FileStatus>();
 		// check all the files in the path vs. the filter
-		Path path=new Path(this.store.getId().toASCIIString() + "/" + (delim > -1 ? filterPrefix.substring(0, delim) : ""));
-		List<FileStatus> tmpFiles = getFiles(path, new ArrayList<FileStatus>(), false);
-		for (FileStatus f : tmpFiles) {
-			log.debug("checking name to add to filter " + f.getPath().getName());	
-			if (f.getPath().getName().startsWith(filterPrefix)){
-				files.add(f);
-			}
-		}
-		return new HDFSIdIterator(files);
+		return new HDFSIdIterator(getFiles(new Path(this.store.getId().toASCIIString() + "/"), filterPrefix));
 	}
 
 	/*
-	 * Utility method for recursively fetching the directory contents in the
+	 * Utility methods for recursively fetching the directory contents in the
 	 * hadoop filesystem. Calls itself on the subdirectories
 	 */
-	private List<FileStatus> getFiles(final Path p, List<FileStatus> target, boolean recursive) throws IOException {
+	private List<URI> getFiles(final Path p, String prefix) throws IOException {
+		return getFiles(p, new ArrayList<URI>(), prefix);
+	}
+
+	private List<URI> getFiles(Path p, ArrayList<URI> target, String prefix) throws IOException {
 		for (FileStatus f : getFileSystem().listStatus(p)) {
-			if (f.isFile()) {
-				target.add(f);
+			if (f.isFile() && f.getPath().getName().startsWith(prefix)) {
+				target.add(URI.create("hdfs:" +  f.getPath().getName()));
 			}
-			if (f.isDirectory() && recursive) {
-				getFiles(f.getPath(), target, recursive);
+			if (f.isDirectory()) {
+				getFiles(f.getPath(), target, prefix);
 			}
 		}
 		return target;
@@ -202,11 +196,11 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 	public void sync() throws UnsupportedOperationException {
 		throw new UnsupportedOperationException("not yet implemented");
 	}
-	
-	FileSystem getFileSystem() throws IOException{
+
+	FileSystem getFileSystem() throws IOException {
 		// lazy init for testability
-		if (hdfs==null){
-			hdfs=store.openHDFSConnection();
+		if (hdfs == null) {
+			hdfs = store.openHDFSConnection();
 		}
 		return hdfs;
 	}

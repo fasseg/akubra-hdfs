@@ -20,6 +20,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,12 +28,10 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.junit.Test;
 
-import de.fiz.akubra.hdfs.HDFSIdIterator;
-
 public class HDFSIdIteratorTest {
 	@Test
 	public void createIterator() {
-		HDFSIdIterator it = new HDFSIdIterator(new ArrayList<FileStatus>());
+		HDFSIdIterator it = new HDFSIdIterator(new ArrayList<URI>());
 		assertNotNull(it);
 		assertTrue(it.elementCount() == 0);
 		assertFalse(it.hasNext());
@@ -40,7 +39,7 @@ public class HDFSIdIteratorTest {
 
 	@Test
 	public void testNext() {
-		List<FileStatus> list = createTestList();
+		List<URI> list = createTestList();
 		HDFSIdIterator it = new HDFSIdIterator(list);
 		assertTrue(it.elementCount() == list.size());
 		int count = 0;
@@ -53,30 +52,33 @@ public class HDFSIdIteratorTest {
 
 	@Test
 	public void testGetElementCount() {
-		List<FileStatus> list = createTestList();
+		List<URI> list = createTestList();
 		HDFSIdIterator it = new HDFSIdIterator(list);
 		assertTrue(it.elementCount() == list.size());
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
 	public void testRemove() {
-		List<FileStatus> list = createTestList();
+		List<URI> list = createTestList();
 		HDFSIdIterator it = new HDFSIdIterator(list);
 		it.remove();
 	}
 
-	private List<FileStatus> createTestList() {
-		List<FileStatus> files = new ArrayList<FileStatus>();
-		files.add(new FileStatus(1293, false, 0, 64, System.currentTimeMillis(), new Path("/test1")));
-		files.add(new FileStatus(1213, false, 0, 64, System.currentTimeMillis(), new Path("/test2")));
-		files.add(new FileStatus(12233, false, 0, 64, System.currentTimeMillis(), new Path("/test3")));
-		files.add(new FileStatus(113, false, 0, 64, System.currentTimeMillis(), new Path("/test4")));
-		files.add(new FileStatus(137, false, 0, 64, System.currentTimeMillis(), new Path("/test5")));
-		files.add(new FileStatus(13, false, 0, 64, System.currentTimeMillis(), new Path("/test6")));
-		files.add(new FileStatus(0, false, 0, 64, System.currentTimeMillis(), new Path("/test7")));
-		files.add(new FileStatus(1, false, 0, 64, System.currentTimeMillis(), new Path("/test8")));
-		files.add(new FileStatus(12, false, 0, 64, System.currentTimeMillis(), new Path("/test9")));
-		files.add(new FileStatus(93, false, 0, 64, System.currentTimeMillis(), new Path("/test10")));
+	private List<URI> createTestList() {
+		List<URI> files = new ArrayList<URI>();
+		files.add(URI.create("hdfs:" + "/test1"));
+		files.add(URI.create("hdfs:" + "/test2"));
+		files.add(URI.create("hdfs:" + "/test3"));
+		files.add(URI.create("hdfs:" + "/test4"));
+		files.add(URI.create("hdfs:" + "/test5"));
+		files.add(URI.create("hdfs:" + "/test6"));
+		files.add(URI.create("hdfs:" + "/test7"));
+		files.add(URI.create("hdfs:" + "/foo/test8"));
+		files.add(URI.create("hdfs:" + "/foo/test9"));
+		files.add(URI.create("hdfs:" + "/foo/test10"));
+		files.add(URI.create("hdfs:" + "/foo/bar/test11"));
+		files.add(URI.create("hdfs:" + "/foo/bar/test12"));
+		files.add(URI.create("hdfs:" + "/foo/bar//test13"));
 		return files;
 	}
 }
