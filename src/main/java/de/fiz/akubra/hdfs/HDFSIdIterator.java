@@ -50,7 +50,7 @@ public class HDFSIdIterator implements Iterator<URI> {
 
 	@Override
 	public URI next() {
-		return URI.create("file:" + files.get(currentIndex++).getPath().getName());
+		return URI.create("hdfs:" + files.get(currentIndex++).getPath().getName());
 	}
 
 	@Override

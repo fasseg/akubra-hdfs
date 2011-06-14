@@ -16,25 +16,19 @@
  */
 package de.fiz.akubra.hdfs;
 
-import static org.easymock.EasyMock.createMock;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 
-import org.apache.hadoop.fs.FileSystem;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.fiz.akubra.hdfs.HDFSBlobStore;
-
 public class HDFSBlobStoreTest {
 
 	private static URI storeUri;
-	private FileSystem mockFs;
 	private HDFSBlobStore store;
 
 	@BeforeClass
@@ -44,11 +38,7 @@ public class HDFSBlobStoreTest {
 
 	@Before
 	public void init() throws Exception {
-		mockFs = createMock(FileSystem.class);
 		store = new HDFSBlobStore(storeUri);
-		Field f = HDFSBlobStore.class.getDeclaredField("fileSystem");
-		f.setAccessible(true);
-		f.set(store, mockFs);
 	}
 
 	@Test
@@ -58,14 +48,12 @@ public class HDFSBlobStoreTest {
 
 	@Test
 	public void testGetId() throws Exception {
-		HDFSBlobStore store = new HDFSBlobStore(storeUri);
 		assertNotNull(store);
 		assertEquals(storeUri, store.getId());
 	}
 
 	@Test
 	public void testOpenConnection() throws Exception {
-		HDFSBlobStore store = new HDFSBlobStore(storeUri);
 		assertNotNull(store.openConnection(null, null));
 		assertFalse(store.openConnection(null, null).isClosed());
 	}

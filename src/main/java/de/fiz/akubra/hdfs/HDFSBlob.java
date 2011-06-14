@@ -42,8 +42,8 @@ import org.slf4j.LoggerFactory;
 class HDFSBlob implements Blob {
 	private final Path path;
 	private final URI uri;
-	private HDFSBlobStoreConnection conn;
-	private URI storeId;
+	private final HDFSBlobStoreConnection conn;
+	private final URI storeId;
 	private static final Logger log = LoggerFactory.getLogger(HDFSBlob.class);
 
 	/**
@@ -62,6 +62,7 @@ class HDFSBlob implements Blob {
 		this.storeId = this.conn.getBlobStore().getId();
 		this.uri=uri;
 		this.path = new Path(this.storeId.toASCIIString() + "/" + this.uri.getRawSchemeSpecificPart());
+		log.debug("opening blob " + uri.toASCIIString() + " at " + this.path.toString());
 	}
 
 	/**
@@ -71,7 +72,7 @@ class HDFSBlob implements Blob {
 	 *             if the operation did not succeed
 	 */
 	public void delete() throws IOException {
-		getFileSystem().delete(path, false);
+		this.conn.getFileSystem().delete(path, false);
 	}
 
 	/**
@@ -81,14 +82,7 @@ class HDFSBlob implements Blob {
 	 *             if the operation did not succeed
 	 */
 	public boolean exists() throws IOException {
-		try{
-			return this.getFileSystem().exists(path);	
-		}catch(IOException e){
-			// try reconnect
-			this.conn=(HDFSBlobStoreConnection) this.getConnection().getBlobStore().openConnection(null, null);
-			this.storeId=this.conn.getBlobStore().getId();
-			return this.getFileSystem().exists(path);
-		}
+			return this.conn.getFileSystem().exists(path);	
 	}
 
 	/**
@@ -132,7 +126,7 @@ class HDFSBlob implements Blob {
 		if (!this.exists()) {
 			throw new MissingBlobException(uri);
 		}
-		return getFileSystem().getFileStatus(path).getLen();
+		return this.conn.getFileSystem().getFileStatus(path).getLen();
 	}
 
 	/**
@@ -188,7 +182,7 @@ class HDFSBlob implements Blob {
 	 */
 	public InputStream openInputStream() throws IOException, MissingBlobException {
 		if (this.exists()) {
-			return getFileSystem().open(path);
+			return this.conn.getFileSystem().open(path);
 		}
 		throw new MissingBlobException(uri);
 	}
@@ -211,18 +205,14 @@ class HDFSBlob implements Blob {
 			if (overWrite) {
 				// return a stream that will
 				// overwrite this blobs content
-				return getFileSystem().create(path, true);
+				return this.conn.getFileSystem().create(path, true);
 			} else {
 				throw new DuplicateBlobException(uri);
 			}
 		} else {
 			// create a new file for this blob's
 			// data on the hdfs
-			return getFileSystem().create(path);
+			return this.conn.getFileSystem().create(path);
 		}
-	}
-
-	private FileSystem getFileSystem() throws IOException {
-		return this.conn.getFileSystem();
 	}
 }

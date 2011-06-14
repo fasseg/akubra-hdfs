@@ -57,7 +57,7 @@ public class HDFSBlobTest {
 
 	@BeforeClass
 	public static void init() throws Exception {
-		blobUri = new URI("file:6f/allestest");
+		blobUri = new URI("hdfs:6f/allestest");
 		blobStoreUri = new URI("hdfs://localhost:9000/");
 	}
 

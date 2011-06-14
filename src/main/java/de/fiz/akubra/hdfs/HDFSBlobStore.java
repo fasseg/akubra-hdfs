@@ -37,7 +37,6 @@ import org.apache.hadoop.fs.FileSystem;
 public class HDFSBlobStore implements BlobStore {
 
 	private final URI id;
-	private FileSystem fileSystem;
 
 	/**
 	 * create a new {@link HDFSBlobStore} at a specific URI in {@link String}
@@ -82,11 +81,7 @@ public class HDFSBlobStore implements BlobStore {
 		return new HDFSBlobStoreConnection(this);
 	}
 
-	public FileSystem getFileSystem() throws IOException {
-		if (this.fileSystem == null) {
-			this.fileSystem=FileSystem.get(this.getId(), new Configuration());
-		}
-		return this.fileSystem;
+	FileSystem openHDFSConnection() throws IOException{
+		return FileSystem.get(this.id,new Configuration());
 	}
-
 }

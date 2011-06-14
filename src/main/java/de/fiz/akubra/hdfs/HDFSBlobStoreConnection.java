@@ -16,12 +16,10 @@
  */
 package de.fiz.akubra.hdfs;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -49,6 +47,7 @@ import org.slf4j.LoggerFactory;
 class HDFSBlobStoreConnection implements BlobStoreConnection {
 
 	private final HDFSBlobStore store;
+	private FileSystem hdfs;
 	private boolean closed = false;
 	private static final Logger log = LoggerFactory.getLogger(HDFSBlobStoreConnection.class);
 
@@ -68,8 +67,13 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 	/**
 	 * close this connection
 	 */
-	public void close() {
+	public void close(){
 		this.closed = true;
+		try{
+			getFileSystem().close();
+		}catch(IOException e){
+			log.error("Exception while closing hdfs connection");
+		}
 	}
 
 	/**
@@ -84,14 +88,14 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 	 */
 	public Blob getBlob(final URI uri, final Map<String, String> hints) throws UnsupportedIdException,IOException {
 		if (uri == null) {
-			URI tmp=URI.create("file:" + UUID.randomUUID().toString());
+			URI tmp=URI.create("hdfs:" + UUID.randomUUID().toString());
 			log.debug("creating new Blob uri " + tmp.toASCIIString());
 			//return getBlob(new ByteArrayInputStream(new byte[0]),0, null);
 			return new HDFSBlob(tmp, this);
 		}
 		log.debug("fetching blob " + uri.toASCIIString());
-		if (!uri.toASCIIString().startsWith("file:")) {
-			throw new UnsupportedIdException(uri, "URIs have to start with 'file:'");
+		if (!uri.toASCIIString().startsWith("hdfs:")) {
+			throw new UnsupportedIdException(uri, "HDFS URIs have to start with 'hdfs:'");
 		}
 		HDFSBlob blob = new HDFSBlob(uri, this);
 		return blob;
@@ -117,7 +121,7 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 		HDFSBlob blob;
 		OutputStream out = null;
 		try {
-			blob = new HDFSBlob(URI.create("file:" + UUID.randomUUID().toString()), this);
+			blob = new HDFSBlob(URI.create("hdfs:" + UUID.randomUUID().toString()), this);
 			log.debug("creating file with uri "+ blob.getId().toASCIIString());
 			out = blob.openOutputStream(estimatedSize, false);
 			IOUtils.copy(in, out);
@@ -198,14 +202,12 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 	public void sync() throws UnsupportedOperationException {
 		throw new UnsupportedOperationException("not yet implemented");
 	}
-
-	/**
-	 * get the underlying FileSystem.
-	 * 
-	 * @return the Hadoop API {@link FileSystem} object used for interaction
-	 */
-	public FileSystem getFileSystem() throws IOException {
-		return store.getFileSystem();
+	
+	FileSystem getFileSystem() throws IOException{
+		// lazy init for testability
+		if (hdfs==null){
+			hdfs=store.openHDFSConnection();
+		}
+		return hdfs;
 	}
-
 }
