@@ -72,6 +72,9 @@ class HDFSBlob implements Blob {
 	 *             if the operation did not succeed
 	 */
 	public void delete() throws IOException {
+		if (this.conn.isClosed()){
+			throw new IllegalStateException("Unable to open Inputstream, because connection is closed");
+		}
 		this.conn.getFileSystem().delete(path, false);
 	}
 
@@ -82,7 +85,10 @@ class HDFSBlob implements Blob {
 	 *             if the operation did not succeed
 	 */
 	public boolean exists() throws IOException {
-			return this.conn.getFileSystem().exists(path);	
+		if (this.conn.isClosed()){
+			throw new IllegalStateException("Unable to open Inputstream, because connection is closed");
+		}
+		return this.conn.getFileSystem().exists(path);	
 	}
 
 	/**
@@ -123,6 +129,9 @@ class HDFSBlob implements Blob {
 	 *             if this {@link HDFSBlob} does not exist
 	 */
 	public long getSize() throws IOException, MissingBlobException {
+		if (this.conn.isClosed()){
+			throw new IllegalStateException("Unable to open Inputstream, because connection is closed");
+		}
 		if (!this.exists()) {
 			throw new MissingBlobException(uri);
 		}
@@ -145,6 +154,9 @@ class HDFSBlob implements Blob {
 	 *             if this {@link HDFSBlob} does not exist
 	 */
 	public Blob moveTo(final URI toUri, final Map<String, String> hints) throws DuplicateBlobException, IOException, MissingBlobException {
+		if (this.conn.isClosed()){
+			throw new IllegalStateException("Unable to open Inputstream, because connection is closed");
+		}
 		if (!this.exists()) {
 			throw new MissingBlobException(uri);
 		}
@@ -181,6 +193,9 @@ class HDFSBlob implements Blob {
 	 *             if this {@link HDFSBlob} does not exist.
 	 */
 	public InputStream openInputStream() throws IOException, MissingBlobException {
+		if (this.conn.isClosed()){
+			throw new IllegalStateException("Unable to open Inputstream, because connection is closed");
+		}
 		if (this.exists()) {
 			return this.conn.getFileSystem().open(path);
 		}
@@ -201,6 +216,9 @@ class HDFSBlob implements Blob {
 	 *             if overwrite == false and the {@link HDFSBlob} already exist
 	 */
 	public OutputStream openOutputStream(final long estimatedSize, final boolean overWrite) throws IOException, DuplicateBlobException {
+		if (this.conn.isClosed()){
+			throw new IllegalStateException("Unable to open Inputstream, because connection is closed");
+		}
 		if (this.exists()) {
 			if (overWrite) {
 				// return a stream that will

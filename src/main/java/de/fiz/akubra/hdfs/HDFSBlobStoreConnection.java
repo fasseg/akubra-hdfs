@@ -87,6 +87,9 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 	 *             if the supplied {@link URI} was not valid
 	 */
 	public Blob getBlob(final URI uri, final Map<String, String> hints) throws UnsupportedIdException, IOException {
+		if (closed){
+			throw new IllegalStateException("Unable to fetch Blob, because connection is closed.");
+		}
 		if (uri == null) {
 			URI tmp = URI.create("hdfs:" + UUID.randomUUID().toString());
 			log.debug("creating new Blob uri " + tmp.toASCIIString());
@@ -115,6 +118,9 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 	 *             if the operation did not succeed
 	 */
 	public Blob getBlob(final InputStream in, final long estimatedSize, final Map<String, String> hints) throws IOException {
+		if (closed){
+			throw new IllegalStateException("Unable to create Blob, because connection is closed.");
+		}
 		if (in == null) {
 			throw new NullPointerException("inputstream can not be null");
 		}
@@ -159,6 +165,9 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 	 *             if the operation did not succeed
 	 */
 	public Iterator<URI> listBlobIds(final String filterPrefix) throws IOException {
+		if (closed){
+			throw new IllegalStateException("Unable to list Blobs, because connection is closed.");
+		}
 		if (filterPrefix == null || filterPrefix.length() == 0) {
 			// complete filesystem scan
 			return new HDFSIdIterator(getFiles(new Path(this.store.getId().toASCIIString() + "/"), null));

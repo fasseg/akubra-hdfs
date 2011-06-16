@@ -80,6 +80,7 @@ public class HDFSBlobTest {
 	@Test
 	public void testDelete() throws Exception {
 		expect(mockConnection.getBlobStore()).andReturn(mockStore);
+		expect(mockConnection.isClosed()).andReturn(false);
 		expect(mockStore.getId()).andReturn(blobStoreUri);
 		expect(mockConnection.getFileSystem()).andReturn(mockFs).times(2);
 		expect(mockFs.delete((Path) anyObject(), anyBoolean())).andReturn(true);
@@ -91,6 +92,7 @@ public class HDFSBlobTest {
 	@Test
 	public void testExists() throws Exception {
 		expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
+		expect(mockConnection.isClosed()).andReturn(false);
 		expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
 		expect(mockConnection.getFileSystem()).andReturn(mockFs);
 		expect(mockFs.exists((Path) anyObject())).andReturn(true);
@@ -130,6 +132,7 @@ public class HDFSBlobTest {
 	@Test
 	public void testGetSize() throws Exception {
 		expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
+		expect(mockConnection.isClosed()).andReturn(false).times(2);
 		expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
 		expect(mockConnection.getFileSystem()).andReturn(mockFs).times(2);
 		expect(mockFs.exists((Path) anyObject())).andReturn(true);
@@ -169,6 +172,7 @@ public class HDFSBlobTest {
 	@Test
 	public void testOpenInputStream()throws Exception {
 		expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
+		expect(mockConnection.isClosed()).andReturn(false).times(2);
 		expect(mockConnection.getFileSystem()).andReturn(mockFs).times(2);
 		expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
 		expect(mockFs.exists((Path) anyObject())).andReturn(true);
@@ -183,6 +187,7 @@ public class HDFSBlobTest {
 	@Test
 	public void testOpenOutputStream() throws Exception {
 		expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
+		expect(mockConnection.isClosed()).andReturn(false).times(2);
 		expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
 		expect(mockConnection.getFileSystem()).andReturn(mockFs).times(2);
 		expect(mockFs.exists((Path) anyObject())).andReturn(false);
