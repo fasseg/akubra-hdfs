@@ -87,11 +87,11 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 	 *             if the supplied {@link URI} was not valid
 	 */
 	public Blob getBlob(final URI uri, final Map<String, String> hints) throws UnsupportedIdException, IOException {
-		if (closed){
+		if (closed) {
 			throw new IllegalStateException("Unable to fetch Blob, because connection is closed.");
 		}
 		if (uri == null) {
-			URI tmp = URI.create("hdfs:" + UUID.randomUUID().toString());
+			URI tmp = URI.create(store.getId() + UUID.randomUUID().toString());
 			log.debug("creating new Blob uri " + tmp.toASCIIString());
 			// return getBlob(new ByteArrayInputStream(new byte[0]),0, null);
 			return new HDFSBlob(tmp, this);
@@ -117,9 +117,11 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 	 * @throws IOException
 	 *             if the operation did not succeed
 	 */
-	public Blob getBlob(final InputStream in, final long estimatedSize, final Map<String, String> hints) throws IOException {
-		if (closed){
-			throw new IllegalStateException("Unable to create Blob, because connection is closed.");
+	public Blob getBlob(final InputStream in, final long estimatedSize,
+			final Map<String, String> hints) throws IOException {
+		if (closed) {
+			throw new IllegalStateException(
+					"Unable to create Blob, because connection is closed.");
 		}
 		if (in == null) {
 			throw new NullPointerException("inputstream can not be null");
@@ -127,7 +129,7 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 		HDFSBlob blob;
 		OutputStream out = null;
 		try {
-			blob = new HDFSBlob(URI.create("hdfs:" + UUID.randomUUID().toString()), this);
+			blob = new HDFSBlob(URI.create(store.getId().toASCIIString() + UUID.randomUUID().toString()), this);
 			log.debug("creating file with uri " + blob.getId().toASCIIString());
 			out = blob.openOutputStream(estimatedSize, false);
 			IOUtils.copy(in, out);
@@ -165,7 +167,7 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 	 *             if the operation did not succeed
 	 */
 	public Iterator<URI> listBlobIds(final String filterPrefix) throws IOException {
-		if (closed){
+		if (closed) {
 			throw new IllegalStateException("Unable to list Blobs, because connection is closed.");
 		}
 		if (filterPrefix == null || filterPrefix.length() == 0) {
@@ -187,7 +189,7 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 	private List<URI> getFiles(Path p, ArrayList<URI> target, String prefix) throws IOException {
 		for (FileStatus f : getFileSystem().listStatus(p)) {
 			if (f.isFile() && f.getPath().getName().startsWith(prefix)) {
-				target.add(URI.create("hdfs:" +  f.getPath().getName()));
+				target.add(URI.create(store.getId() +  f.getPath().getName()));
 			}
 			if (f.isDirectory()) {
 				getFiles(f.getPath(), target, prefix);

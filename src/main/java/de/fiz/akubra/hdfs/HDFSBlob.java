@@ -21,14 +21,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.Map;
+import java.util.UUID;
 
 import org.akubraproject.Blob;
 import org.akubraproject.BlobStoreConnection;
 import org.akubraproject.DuplicateBlobException;
 import org.akubraproject.MissingBlobException;
 import org.akubraproject.UnsupportedIdException;
-import org.apache.commons.io.IOUtils;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,10 +39,10 @@ import org.slf4j.LoggerFactory;
  * 
  */
 class HDFSBlob implements Blob {
-	private final Path path;
-	private final URI uri;
 	private final HDFSBlobStoreConnection conn;
 	private final URI storeId;
+	private Path path;
+	private URI uri;
 	private static final Logger log = LoggerFactory.getLogger(HDFSBlob.class);
 
 	/**
@@ -57,11 +56,11 @@ class HDFSBlob implements Blob {
 	 *            manipulate this {@link HDFSBlob}
 	 * @throws UnsupportedIdException
 	 */
-	public HDFSBlob(final URI uri, final HDFSBlobStoreConnection conn){
+	public HDFSBlob(final URI uri, final HDFSBlobStoreConnection conn) {
 		this.conn = conn;
 		this.storeId = this.conn.getBlobStore().getId();
-		this.uri=uri;
-		this.path = new Path(this.storeId.toASCIIString() + "/" + this.uri.getRawSchemeSpecificPart());
+		this.uri = uri;
+		this.path = new Path(this.uri);
 		log.debug("opening blob " + uri.toASCIIString() + " at " + this.path.toString());
 	}
 
@@ -72,7 +71,7 @@ class HDFSBlob implements Blob {
 	 *             if the operation did not succeed
 	 */
 	public void delete() throws IOException {
-		if (this.conn.isClosed()){
+		if (this.conn.isClosed()) {
 			throw new IllegalStateException("Unable to open Inputstream, because connection is closed");
 		}
 		this.conn.getFileSystem().delete(path, false);
@@ -85,10 +84,10 @@ class HDFSBlob implements Blob {
 	 *             if the operation did not succeed
 	 */
 	public boolean exists() throws IOException {
-		if (this.conn.isClosed()){
+		if (this.conn.isClosed()) {
 			throw new IllegalStateException("Unable to open Inputstream, because connection is closed");
 		}
-		return this.conn.getFileSystem().exists(path);	
+		return this.conn.getFileSystem().exists(path);
 	}
 
 	/**
@@ -129,7 +128,7 @@ class HDFSBlob implements Blob {
 	 *             if this {@link HDFSBlob} does not exist
 	 */
 	public long getSize() throws IOException, MissingBlobException {
-		if (this.conn.isClosed()){
+		if (this.conn.isClosed()) {
 			throw new IllegalStateException("Unable to open Inputstream, because connection is closed");
 		}
 		if (!this.exists()) {
@@ -153,35 +152,48 @@ class HDFSBlob implements Blob {
 	 * @throws MissingBlobException
 	 *             if this {@link HDFSBlob} does not exist
 	 */
-	public Blob moveTo(final URI toUri, final Map<String, String> hints) throws DuplicateBlobException, IOException, MissingBlobException {
-		if (this.conn.isClosed()){
+	public Blob moveTo(URI toUri, final Map<String, String> hints) throws DuplicateBlobException, IOException, MissingBlobException {
+		if (toUri==null){
+			log.debug("creating new random URI " + toUri);
+			toUri=URI.create(this.getConnection().getBlobStore().getId() + UUID.randomUUID().toString());
+		}
+		if (!toUri.toASCIIString().startsWith("hdfs://")){
+			log.error("invalid scheme: " + toUri.getRawSchemeSpecificPart());
+			throw new UnsupportedIdException(toUri);
+		}
+		log.debug("moving " + this.getId() + " to " + toUri);
+		if (this.conn.isClosed()) {
 			throw new IllegalStateException("Unable to open Inputstream, because connection is closed");
 		}
 		if (!this.exists()) {
 			throw new MissingBlobException(uri);
 		}
-		// it seems necessary to create a new file on the hdfs
-		// and copy this blob's content to the new file
-		// since there is no support for move in the hdfs api
-		HDFSBlob newBlob = (HDFSBlob) this.getConnection().getBlob(toUri, null);
-		if (newBlob.exists()) {
+		if (this.conn.getFileSystem().exists(new Path(toUri))) {
 			throw new DuplicateBlobException(toUri);
 		}
-		// copy the contents of this blob into the newly created blob
-		InputStream in=null;
-		OutputStream out=null;
-		try{
-			in = this.openInputStream();
-			out = newBlob.openOutputStream(this.getSize(), false);
-			IOUtils.copy(in, out);
-		}catch(IOException e){
-			throw e;
-		}finally{
-			IOUtils.closeQuietly(in);
-			IOUtils.closeQuietly(out);
+		String path=toUri.toASCIIString();
+		if (path.startsWith(storeId.toASCIIString())){
+			path=path.substring(storeId.toASCIIString().length());
+		}else if (path.startsWith("hdfs://")){
+			path=path.substring(7);
 		}
-		this.delete();
-		return newBlob;
+		String[] directories=path.split("/");
+		log.debug("" + directories.length);
+		path="";
+		for (int i=0;i<directories.length-1;i++){
+			path+=directories[i] + "/";
+			log.debug("checking path " + path);
+			if (!this.conn.getFileSystem().exists(new Path(storeId + path))){
+				log.debug("creating " + path);
+				this.conn.getFileSystem().mkdirs(new Path(storeId + path));
+			}
+		}
+		if (this.conn.getFileSystem().rename(new Path(uri), new Path(toUri))) {
+			log.debug("file has been moved succesfully to " + toUri);
+			return this.conn.getBlob(toUri, null);
+		} else {
+			throw new IOException("Unable to rename " + uri + " to " + toUri);
+		}
 	}
 
 	/**
@@ -193,7 +205,7 @@ class HDFSBlob implements Blob {
 	 *             if this {@link HDFSBlob} does not exist.
 	 */
 	public InputStream openInputStream() throws IOException, MissingBlobException {
-		if (this.conn.isClosed()){
+		if (this.conn.isClosed()) {
 			throw new IllegalStateException("Unable to open Inputstream, because connection is closed");
 		}
 		if (this.exists()) {
@@ -216,7 +228,7 @@ class HDFSBlob implements Blob {
 	 *             if overwrite == false and the {@link HDFSBlob} already exist
 	 */
 	public OutputStream openOutputStream(final long estimatedSize, final boolean overWrite) throws IOException, DuplicateBlobException {
-		if (this.conn.isClosed()){
+		if (this.conn.isClosed()) {
 			throw new IllegalStateException("Unable to open Inputstream, because connection is closed");
 		}
 		if (this.exists()) {

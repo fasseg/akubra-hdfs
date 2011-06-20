@@ -4,6 +4,8 @@ which is used by fedora-commons (http://fedora-commons.org/)
 This implementation enables fedora-commons to use a Hadoop filesystem (http://hadoop.apache.org/)
 as an underlying object and datastream storage.
 
+akubra-hdfs is still in an early development state and in no way ready for production use!
+
 In order to use akubra-hdfs with a fedora-commons repository it's enough to change the file 
 $FEDORA_HOME/server/config/akubra-llstore.xml and edit the two beans 'fsObjectStore' 
 and 'fsDataStreamStore' to use the class 'de.fiz.akubra.hdfs.HDFSBlobStore':

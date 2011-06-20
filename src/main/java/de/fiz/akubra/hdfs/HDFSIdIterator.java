@@ -22,6 +22,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.hadoop.fs.FileStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 
 /**
  * An very simple {@link Iterator} implementation for the {@link HDFSBlobStoreConnection}
@@ -33,7 +37,7 @@ public class HDFSIdIterator implements Iterator<URI> {
 	private final List<URI> uris;
 	private final int len;
 	private int currentIndex = 0;
-
+	private static final Logger log=LoggerFactory.getLogger(HDFSIdIterator.class);
 	/**
 	 * create a new {@link HDFSIdIterator} based on the supplied list
 	 * @param list the {@link FileStatus} list to be iterated over
@@ -50,7 +54,9 @@ public class HDFSIdIterator implements Iterator<URI> {
 
 	@Override
 	public URI next() {
-		return uris.get(currentIndex++);
+		URI u=uris.get(currentIndex++);
+		log.debug("iterating over " + u.toASCIIString());
+		return u;
 	}
 
 	@Override

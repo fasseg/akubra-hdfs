@@ -41,12 +41,7 @@ import org.apache.hadoop.fs.PositionedReadable;
 import org.apache.hadoop.fs.Seekable;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import de.fiz.akubra.hdfs.HDFSBlob;
-import de.fiz.akubra.hdfs.HDFSBlobStore;
-import de.fiz.akubra.hdfs.HDFSBlobStoreConnection;
 
 public class HDFSBlobTest {
 	private HDFSBlobStore mockStore;
@@ -143,34 +138,25 @@ public class HDFSBlobTest {
 	}
 
 	@Test
-	@Ignore
+	@SuppressWarnings("unchecked")
 	public void testMoveTo() throws Exception {
-		//TODO: Fix me test is broken
-		URI toUri = new URI(blobStoreUri.toASCIIString() + "6f/test_move");
-		expect(mockConnection.getBlobStore()).andReturn(mockStore).times(1);
-		expect(mockConnection.getBlob(anyObject(URI.class), anyObject(Map.class))).andReturn(new HDFSBlob(toUri, mockConnection));
-		expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
-		expect(mockConnection.getFileSystem()).andReturn(mockFs).times(1);
-		expect(mockFs.exists((Path) anyObject())).andReturn(true);
-		expect(mockFs.exists((Path) anyObject())).andReturn(false);
-		expect(mockFs.exists((Path) anyObject())).andReturn(true);
-		byte[] buf = new byte[1024];
-		new Random().nextBytes(buf);
-		expect(mockFs.open((Path) anyObject())).andReturn(new FSDataInputStream(new SeekableInputStream(buf)));
-		expect(mockFs.exists((Path) anyObject())).andReturn(true);
-		expect(mockFs.getFileStatus((Path) anyObject())).andReturn(createTestFileStatus());
-		expect(mockFs.exists((Path) anyObject())).andReturn(false);
-		expect(mockFs.create((Path) anyObject())).andReturn(new FSDataOutputStream(new ByteArrayOutputStream(1024), null));
-		expect(mockFs.delete((Path) anyObject(),anyBoolean())).andReturn(true);
-		replay(mockConnection, mockFs, mockStore);
-		HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
-		HDFSBlob newBlob = (HDFSBlob) b.moveTo(toUri, null);
-		assertNotNull(newBlob);
-		assertEquals(toUri,newBlob.getId());
+		expect(mockConnection.getBlobStore()).andReturn(mockStore);
+		expect(mockStore.getId()).andReturn(blobStoreUri);
+		expect(mockConnection.isClosed()).andReturn(false).times(2);
+		expect(mockConnection.getFileSystem()).andReturn(mockFs).times(9);
+		expect(mockFs.mkdirs(anyObject(Path.class))).andReturn(true).times(3);
+		expect(mockFs.exists(anyObject(Path.class))).andReturn(true);
+		expect(mockFs.exists(anyObject(Path.class))).andReturn(false).times(5);
+		expect(mockFs.rename(anyObject(Path.class), anyObject(Path.class))).andReturn(true);
+		expect(mockConnection.getBlob(anyObject(URI.class), anyObject(Map.class))).andReturn(null);
+		replay(mockConnection,mockFs,mockStore);
+		HDFSBlob b=new HDFSBlob(blobUri, mockConnection);
+		URI newURI=URI.create("hdfs://localhost:9000/7f/kjahdsjahd/it-is-a-dir/moveTest");
+		b.moveTo(newURI, null);
 	}
 
 	@Test
-	public void testOpenInputStream()throws Exception {
+	public void testOpenInputStream() throws Exception {
 		expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
 		expect(mockConnection.isClosed()).andReturn(false).times(2);
 		expect(mockConnection.getFileSystem()).andReturn(mockFs).times(2);
@@ -201,7 +187,7 @@ public class HDFSBlobTest {
 		return new FileStatus(1024, false, 0, 0, 0, new Path(blobStoreUri + blobUri.toASCIIString().substring(5)));
 	}
 
-	public class SeekableInputStream extends ByteArrayInputStream implements PositionedReadable,Seekable {
+	public class SeekableInputStream extends ByteArrayInputStream implements PositionedReadable, Seekable {
 		public SeekableInputStream(byte[] buf) {
 			super(buf);
 		}
@@ -222,7 +208,7 @@ public class HDFSBlobTest {
 		@Override
 		public void seek(long pos) throws IOException {
 			// TODO Auto-generated method stub
-			
+
 		}
 
 		@Override
@@ -236,6 +222,6 @@ public class HDFSBlobTest {
 			// TODO Auto-generated method stub
 			return false;
 		}
-		
+
 	}
 }

@@ -16,7 +16,6 @@
  */
 package de.fiz.akubra.hdfs;
 
-
 import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
@@ -37,11 +36,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.junit.Before;
 import org.junit.Test;
-
-import de.fiz.akubra.hdfs.HDFSBlob;
-import de.fiz.akubra.hdfs.HDFSBlobStore;
-import de.fiz.akubra.hdfs.HDFSBlobStoreConnection;
-import de.fiz.akubra.hdfs.HDFSIdIterator;
 
 public class HDFSBlobStoreConnectionTest {
 
@@ -78,7 +72,8 @@ public class HDFSBlobStoreConnectionTest {
 	@Test
 	public void testGetBlob1() throws Exception {
 		expect(mockStore.openHDFSConnection()).andReturn(mockFs);
-		expect(mockStore.getId()).andReturn(new URI("hdfs://localhost:9000/")).times(3);
+		expect(mockStore.getId()).andReturn(new URI("hdfs://localhost:9000/"))
+				.times(3);
 		replay(mockStore, mockFs);
 		HDFSBlob b = (HDFSBlob) connection.getBlob(new URI("hdfs:test"), null);
 		assertNotNull(b);
@@ -88,14 +83,16 @@ public class HDFSBlobStoreConnectionTest {
 	@Test
 	public void testCreateBlob1() throws Exception {
 		expect(mockStore.openHDFSConnection()).andReturn(mockFs);
-		expect(mockStore.getId()).andReturn(new URI("hdfs://localhost:9000/"));
+		expect(mockStore.getId()).andReturn(new URI("hdfs://localhost:9000/")).times(2);
 		expect(mockFs.exists((Path) anyObject())).andReturn(false);
-		expect(mockFs.create((Path) anyObject())).andReturn(new FSDataOutputStream(new ByteArrayOutputStream(20), null));
+		expect(mockFs.create((Path) anyObject())).andReturn(
+				new FSDataOutputStream(new ByteArrayOutputStream(20), null));
 		expect(mockFs.exists((Path) anyObject())).andReturn(true);
 		replay(mockStore, mockFs);
 		byte[] buf = new byte[4096];
 		new Random().nextBytes(buf);
-		HDFSBlob b = (HDFSBlob) connection.getBlob(new ByteArrayInputStream(buf), 4096, null);
+		HDFSBlob b = (HDFSBlob) connection.getBlob(
+				new ByteArrayInputStream(buf), 4096, null);
 		assertNotNull(b);
 		assertTrue(b.getConnection() == connection);
 		assertTrue(b.exists());
@@ -111,7 +108,7 @@ public class HDFSBlobStoreConnectionTest {
 	}
 
 	@Test
-	public void testIsClosed() throws Exception{
+	public void testIsClosed() throws Exception {
 		expect(mockStore.openHDFSConnection()).andReturn(mockFs);
 		mockFs.close();
 		replay(mockStore, mockFs);
@@ -121,36 +118,37 @@ public class HDFSBlobStoreConnectionTest {
 	}
 
 	@Test
-	public void testListBlobIds() throws Exception{
+	public void testListBlobIds() throws Exception {
 		expect(mockStore.openHDFSConnection()).andReturn(mockFs);
-		expect(mockFs.listStatus((Path) anyObject())).andReturn(createTestFileStatus()).times(2);
-		expect(mockStore.getId()).andReturn(URI.create("hdfs://localhost:9000/")).times(2);
+		expect(mockFs.listStatus((Path) anyObject())).andReturn(
+				createTestFileStatus()).times(2);
+		expect(mockStore.getId()).andReturn(
+				URI.create("hdfs://localhost:9000/")).times(2);
 		replay(mockStore, mockFs);
-		HDFSIdIterator it=(HDFSIdIterator) connection.listBlobIds("/");
+		HDFSIdIterator it = (HDFSIdIterator) connection.listBlobIds("/");
 		assertNotNull(it);
 	}
 
-	@Test(expected=UnsupportedOperationException.class)
+	@Test(expected = UnsupportedOperationException.class)
 	public void testSync() throws Exception {
 		replay(mockStore, mockFs);
 		connection.sync();
 	}
 
 	@Test
-	public void testGetFileSystem() throws Exception{
+	public void testGetFileSystem() throws Exception {
 		replay(mockStore, mockFs);
 		assertNotNull(connection.getFileSystem());
 		assertTrue(connection.getFileSystem() == mockFs);
 	}
-	
-	private FileStatus[] createTestFileStatus(){
-		FileStatus[] states=new FileStatus[]{
+
+	private FileStatus[] createTestFileStatus() {
+		FileStatus[] states = new FileStatus[] {
 				new FileStatus(1024, false, 0, 0, 0, new Path("hdfs://test1")),
 				new FileStatus(2024, false, 0, 0, 0, new Path("hdfs://test2")),
 				new FileStatus(3024, false, 0, 0, 0, new Path("hdfs://test3")),
 				new FileStatus(4024, false, 0, 0, 0, new Path("hdfs://test4")),
-				new FileStatus(5024, false, 0, 0, 0, new Path("hdfs://test5"))
-		};
+				new FileStatus(5024, false, 0, 0, 0, new Path("hdfs://test5")) };
 		return states;
 	}
 }
