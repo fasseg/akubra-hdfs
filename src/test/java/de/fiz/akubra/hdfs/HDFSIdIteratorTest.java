@@ -16,67 +16,80 @@
  */
 package de.fiz.akubra.hdfs;
 
+import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.junit.Before;
 import org.junit.Test;
 
 public class HDFSIdIteratorTest {
-	@Test
-	public void createIterator() {
-		HDFSIdIterator it = new HDFSIdIterator(new ArrayList<URI>());
-		assertNotNull(it);
-		assertTrue(it.elementCount() == 0);
-		assertFalse(it.hasNext());
-	}
 
-	@Test
-	public void testNext() {
-		List<URI> list = createTestList();
-		HDFSIdIterator it = new HDFSIdIterator(list);
-		assertTrue(it.elementCount() == list.size());
-		int count = 0;
-		while (it.hasNext()) {
-			it.next();
-			count++;
-		}
-		assertTrue(count == list.size());
-	}
+    private FileSystem mockFs;
+    private URI storeURI;
 
-	@Test
-	public void testGetElementCount() {
-		List<URI> list = createTestList();
-		HDFSIdIterator it = new HDFSIdIterator(list);
-		assertTrue(it.elementCount() == list.size());
-	}
+    @Before
+    public void setUp() throws Exception {
+        mockFs = createMock(FileSystem.class);
+        storeURI = URI.create("hdfs://nohost:9000/");
+    }
 
-	@Test(expected = UnsupportedOperationException.class)
-	public void testRemove() {
-		List<URI> list = createTestList();
-		HDFSIdIterator it = new HDFSIdIterator(list);
-		it.remove();
-	}
+    @Test
+    public void testIterator() throws Exception {
+        FileStatus[] rootStats = createTestFiles(storeURI.toASCIIString(), true);
+        FileStatus[] sub1Stats = createTestFiles(storeURI.toASCIIString() + "foo", false);
+        expect(mockFs.listStatus(anyObject(Path.class))).andReturn(rootStats);
+        expect(mockFs.listStatus(anyObject(Path.class))).andReturn(sub1Stats);
+        replay(mockFs);
+        HDFSIdIterator it = new HDFSIdIterator(mockFs, "test");
+        assertNotNull(it);
+        assertTrue(it.hasNext());
+        int count = 0;
+        while (it.hasNext()) {
+            URI uri = (URI) it.next();
+            assertTrue(find(uri, rootStats, sub1Stats));
+            count++;
+        }
+        assertTrue(count == (rootStats.length - 1) * 2);
+    }
 
-	private List<URI> createTestList() {
-		List<URI> files = new ArrayList<URI>();
-		files.add(URI.create("hdfs:" + "/test1"));
-		files.add(URI.create("hdfs:" + "/test2"));
-		files.add(URI.create("hdfs:" + "/test3"));
-		files.add(URI.create("hdfs:" + "/test4"));
-		files.add(URI.create("hdfs:" + "/test5"));
-		files.add(URI.create("hdfs:" + "/test6"));
-		files.add(URI.create("hdfs:" + "/test7"));
-		files.add(URI.create("hdfs:" + "/foo/test8"));
-		files.add(URI.create("hdfs:" + "/foo/test9"));
-		files.add(URI.create("hdfs:" + "/foo/test10"));
-		files.add(URI.create("hdfs:" + "/foo/bar/test11"));
-		files.add(URI.create("hdfs:" + "/foo/bar/test12"));
-		files.add(URI.create("hdfs:" + "/foo/bar//test13"));
-		return files;
-	}
+    @Test(expected = UnsupportedOperationException.class)
+    public void testRemove() {
+        HDFSIdIterator it = new HDFSIdIterator(mockFs, "test");
+        it.remove();
+    }
+
+    private FileStatus[] createTestFiles(String prefix, boolean addDir) {
+        List<FileStatus> files = new ArrayList<FileStatus>();
+        files.add(new FileStatus(1402, false, 1, 67108864l, 0l, new Path(prefix + "/test1")));
+        files.add(new FileStatus(1602, false, 1, 67108864l, 0l, new Path(prefix + "/testöÄüöl")));
+        files.add(new FileStatus(102, false, 1, 67108864l, 0l, new Path(prefix + "/test&")));
+        files.add(new FileStatus(12, false, 1, 67108864l, 0l, new Path(prefix + "/test with space")));
+        files.add(new FileStatus(1102, false, 1, 67108864l, 0l, new Path(prefix + "/testËÚæêó")));
+        files.add(new FileStatus(142, false, 1, 67108864l, 0l, new Path(prefix + "/test6")));
+        if (addDir) {
+            files.add(new FileStatus(142, true, 1, 67108864l, 0l, new Path(prefix + "/foo"))); // a
+        }
+        return (FileStatus[]) files.toArray(new FileStatus[6]);
+    }
+
+    private boolean find(URI needle, FileStatus[]... haystacks) {
+        for (FileStatus[] haystack : haystacks) {
+            for (FileStatus s : haystack) {
+                if (s.getPath().toUri().equals(needle)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

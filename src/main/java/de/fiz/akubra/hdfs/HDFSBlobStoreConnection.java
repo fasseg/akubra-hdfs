@@ -170,32 +170,7 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 		if (closed) {
 			throw new IllegalStateException("Unable to list Blobs, because connection is closed.");
 		}
-		if (filterPrefix == null || filterPrefix.length() == 0) {
-			// complete filesystem scan
-			return new HDFSIdIterator(getFiles(new Path(this.store.getId().toASCIIString() + "/"), null));
-		}
-		// check all the files in the path vs. the filter
-		return new HDFSIdIterator(getFiles(new Path(this.store.getId().toASCIIString() + "/"), filterPrefix));
-	}
-
-	/*
-	 * Utility methods for recursively fetching the directory contents in the
-	 * hadoop filesystem. Calls itself on the subdirectories
-	 */
-	private List<URI> getFiles(final Path p, String prefix) throws IOException {
-		return getFiles(p, new ArrayList<URI>(), prefix);
-	}
-
-	private List<URI> getFiles(Path p, ArrayList<URI> target, String prefix) throws IOException {
-		for (FileStatus f : getFileSystem().listStatus(p)) {
-			if (f.isFile() && f.getPath().getName().startsWith(prefix)) {
-				target.add(URI.create(store.getId() +  f.getPath().getName()));
-			}
-			if (f.isDirectory()) {
-				getFiles(f.getPath(), target, prefix);
-			}
-		}
-		return target;
+		return new HDFSIdIterator(this.getFileSystem(),filterPrefix);
 	}
 
 	/**

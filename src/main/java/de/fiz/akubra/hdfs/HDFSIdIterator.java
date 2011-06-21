@@ -16,58 +16,89 @@
  */
 package de.fiz.akubra.hdfs;
 
+import java.io.IOException;
 import java.net.URI;
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-
 /**
- * An very simple {@link Iterator} implementation for the {@link HDFSBlobStoreConnection}
+ * An very simple {@link Iterator} implementation for the
+ * {@link HDFSBlobStoreConnection}
+ * 
  * @author frank asseg
- *
+ * 
  */
 public class HDFSIdIterator implements Iterator<URI> {
 
-	private final List<URI> uris;
-	private final int len;
-	private int currentIndex = 0;
-	private static final Logger log=LoggerFactory.getLogger(HDFSIdIterator.class);
-	/**
-	 * create a new {@link HDFSIdIterator} based on the supplied list
-	 * @param list the {@link FileStatus} list to be iterated over
-	 */
-	public HDFSIdIterator(final List<URI> list) {
-		this.uris = list;
-		len = list.size();
+	private static final Logger log = LoggerFactory.getLogger(HDFSIdIterator.class);
+	private final FileSystem hdfs;
+	private final String prefix;
+
+	private final Queue<Path> dirQueue = new LinkedList<Path>();
+	private final Queue<Path> fileQueue = new LinkedList<Path>();
+	
+	public HDFSIdIterator(final FileSystem hdfs,final String prefix){
+		this.hdfs=hdfs;
+		if (prefix==null){
+		    this.prefix="";
+		}else{
+		    this.prefix=prefix;
+		}
+		dirQueue.add(new Path("/"));
 	}
 
 	@Override
 	public boolean hasNext() {
-		return currentIndex < len;
+		while (fileQueue.isEmpty()) {
+			if (!updateQueues()){
+				return false;
+			}
+		}
+		return !fileQueue.isEmpty();
 	}
 
 	@Override
 	public URI next() {
-		URI u=uris.get(currentIndex++);
-		log.debug("iterating over " + u.toASCIIString());
-		return u;
+		while (fileQueue.isEmpty()) {
+			if (!updateQueues()) {
+				return null;
+			}
+		}
+		return fileQueue.poll().toUri();
 	}
 
 	@Override
-	public void remove() {
-		throw new UnsupportedOperationException("optional remove is not implemented");
+	public void remove() throws UnsupportedOperationException {
+		throw new UnsupportedOperationException("remove is not implemented");
 	}
-	/**
-	 * get the element count in the list
-	 * @return the number of elements in the {@link Collection}
-	 */
-	public int elementCount() {
-		return len;
+
+	private boolean updateQueues() {
+		if (fileQueue.isEmpty()) {
+			if (dirQueue.isEmpty()) {
+				return false; // all queues are empty
+			}
+			Path dir = dirQueue.poll();
+			try {
+				for (FileStatus stat : hdfs.listStatus(dir)) {
+					if (stat.isDirectory()) {
+						dirQueue.add(stat.getPath());
+					} else if (stat.getPath().getName().startsWith(prefix)){
+						fileQueue.add(stat.getPath());
+					}
+				}
+			} catch (IOException e) {
+				log.error("Exception while updateing iterator queues", e);
+				return false;
+			}
+		}
+		return true;
 	}
+
 }
