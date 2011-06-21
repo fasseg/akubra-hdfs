@@ -16,12 +16,13 @@
  */
 package de.fiz.akubra.hdfs;
 
-import static org.easymock.EasyMock.*;
-import static org.junit.Assert.assertFalse;
+import static org.easymock.EasyMock.anyObject;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
