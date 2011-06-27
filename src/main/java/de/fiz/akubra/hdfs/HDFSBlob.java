@@ -16,6 +16,7 @@
  */
 package de.fiz.akubra.hdfs;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -131,10 +132,11 @@ class HDFSBlob implements Blob {
         if (this.conn.isClosed()) {
             throw new IllegalStateException("Unable to open Inputstream, because connection is closed");
         }
-        if (!this.exists()) {
-            throw new MissingBlobException(uri);
+        try {
+            return this.conn.getFileSystem().getFileStatus(path).getLen();
+        } catch (FileNotFoundException e) {
+            throw new MissingBlobException(uri, e.getLocalizedMessage());
         }
-        return this.conn.getFileSystem().getFileStatus(path).getLen();
     }
 
     /**
@@ -165,11 +167,11 @@ class HDFSBlob implements Blob {
         if (this.conn.isClosed()) {
             throw new IllegalStateException("Unable to open Inputstream, because connection is closed");
         }
-        if (!this.exists()) {
-            throw new MissingBlobException(uri);
-        }
         if (this.conn.getFileSystem().exists(new Path(toUri))) {
             throw new DuplicateBlobException(toUri);
+        }
+        if (!this.exists()) {
+            throw new MissingBlobException(this.uri);
         }
         String path = toUri.toASCIIString();
         if (path.startsWith(storeId.toASCIIString())) {
@@ -180,7 +182,7 @@ class HDFSBlob implements Blob {
         String[] directories = path.split("/");
         log.debug("" + directories.length);
         path = "";
-        for (int i = 0; i < directories.length - 1; i++) {
+        for (int i = 1; i < directories.length - 1; i++) {
             path += directories[i] + "/";
             log.debug("checking path " + path);
             if (!this.conn.getFileSystem().exists(new Path(storeId + path))) {
@@ -188,11 +190,12 @@ class HDFSBlob implements Blob {
                 this.conn.getFileSystem().mkdirs(new Path(storeId + path));
             }
         }
+
         if (this.conn.getFileSystem().rename(new Path(uri), new Path(toUri))) {
             log.debug("file has been moved succesfully to " + toUri);
             return this.conn.getBlob(toUri, null);
         } else {
-            throw new IOException("Unable to rename " + uri + " to " + toUri);
+            throw new IOException("Unable to rename " + uri + " to " + toUri + ": FileSystem.rename() returned false");
         }
     }
 
@@ -208,10 +211,11 @@ class HDFSBlob implements Blob {
         if (this.conn.isClosed()) {
             throw new IllegalStateException("Unable to open Inputstream, because connection is closed");
         }
-        if (this.exists()) {
+        try {
             return this.conn.getFileSystem().open(path);
+        } catch (FileNotFoundException e) {
+            throw new MissingBlobException(uri, e.getLocalizedMessage());
         }
-        throw new MissingBlobException(uri);
     }
 
     /**
@@ -239,10 +243,9 @@ class HDFSBlob implements Blob {
             } else {
                 throw new DuplicateBlobException(uri);
             }
-        } else {
-            // create a new file for this blob's
-            // data on the hdfs
-            return this.conn.getFileSystem().create(path);
         }
+        // create a new file for this blob's
+        // data on the hdfs
+        return this.conn.getFileSystem().create(path);
     }
 }

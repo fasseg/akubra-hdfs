@@ -31,6 +31,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Random;
 
+import org.akubraproject.DuplicateBlobException;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -130,7 +131,6 @@ public class HDFSBlobTest {
         expect(mockConnection.isClosed()).andReturn(false).times(2);
         expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
         expect(mockConnection.getFileSystem()).andReturn(mockFs).times(2);
-        expect(mockFs.exists((Path) anyObject())).andReturn(true);
         expect(mockFs.getFileStatus((Path) anyObject())).andReturn(createTestFileStatus());
         replay(mockConnection, mockFs, mockStore);
         HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
@@ -144,11 +144,27 @@ public class HDFSBlobTest {
         expect(mockStore.getId()).andReturn(blobStoreUri);
         expect(mockConnection.isClosed()).andReturn(false).times(2);
         expect(mockConnection.getFileSystem()).andReturn(mockFs).times(9);
+        expect(mockFs.mkdirs(anyObject(Path.class))).andReturn(true).times(1);
+        expect(mockFs.exists(anyObject(Path.class))).andReturn(false);
+        expect(mockFs.exists(anyObject(Path.class))).andReturn(true);
+        expect(mockFs.exists(anyObject(Path.class))).andReturn(true);
+        expect(mockFs.exists(anyObject(Path.class))).andReturn(false);
+        expect(mockConnection.getBlob(anyObject(URI.class), anyObject(Map.class))).andReturn(null);
+        expect(mockFs.rename(anyObject(Path.class), anyObject(Path.class))).andReturn(true);
+        replay(mockConnection, mockFs, mockStore);
+        HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
+        URI newURI = URI.create("hdfs://localhost:9000/7f/kjahdsjahd/it-is-a-dir/moveTest");
+        b.moveTo(newURI, null);
+    }
+
+    @Test(expected = DuplicateBlobException.class)
+    public void testMoveToExists() throws Exception {
+        expect(mockConnection.getBlobStore()).andReturn(mockStore);
+        expect(mockStore.getId()).andReturn(blobStoreUri);
+        expect(mockConnection.isClosed()).andReturn(false).times(2);
+        expect(mockConnection.getFileSystem()).andReturn(mockFs).times(9);
         expect(mockFs.mkdirs(anyObject(Path.class))).andReturn(true).times(3);
         expect(mockFs.exists(anyObject(Path.class))).andReturn(true);
-        expect(mockFs.exists(anyObject(Path.class))).andReturn(false).times(5);
-        expect(mockFs.rename(anyObject(Path.class), anyObject(Path.class))).andReturn(true);
-        expect(mockConnection.getBlob(anyObject(URI.class), anyObject(Map.class))).andReturn(null);
         replay(mockConnection, mockFs, mockStore);
         HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
         URI newURI = URI.create("hdfs://localhost:9000/7f/kjahdsjahd/it-is-a-dir/moveTest");
@@ -161,7 +177,6 @@ public class HDFSBlobTest {
         expect(mockConnection.isClosed()).andReturn(false).times(2);
         expect(mockConnection.getFileSystem()).andReturn(mockFs).times(2);
         expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
-        expect(mockFs.exists((Path) anyObject())).andReturn(true);
         byte[] buf = new byte[1024];
         new Random().nextBytes(buf);
         expect(mockFs.open((Path) anyObject())).andReturn(new FSDataInputStream(new SeekableInputStream(buf)));
@@ -171,13 +186,38 @@ public class HDFSBlobTest {
     }
 
     @Test
-    public void testOpenOutputStream() throws Exception {
+    public void testOpenOutputStreamExisting() throws Exception {
         expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
         expect(mockConnection.isClosed()).andReturn(false).times(2);
         expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
         expect(mockConnection.getFileSystem()).andReturn(mockFs).times(2);
-        expect(mockFs.exists((Path) anyObject())).andReturn(false);
-        expect(mockFs.create((Path) anyObject())).andReturn(new FSDataOutputStream(new ByteArrayOutputStream(1024), null));
+        expect(mockFs.exists(anyObject(Path.class))).andReturn(true);
+        expect(mockFs.create(anyObject(Path.class), anyBoolean())).andReturn(new FSDataOutputStream(new ByteArrayOutputStream(8)));
+        replay(mockConnection, mockFs, mockStore);
+        HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
+        assertNotNull(b.openOutputStream(0, true));
+    }
+
+    @Test
+    public void testOpenOutputStreamNew() throws Exception {
+        expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
+        expect(mockConnection.isClosed()).andReturn(false).times(2);
+        expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
+        expect(mockConnection.getFileSystem()).andReturn(mockFs).times(2);
+        expect(mockFs.exists(anyObject(Path.class))).andReturn(false);
+        expect(mockFs.create(anyObject(Path.class))).andReturn(new FSDataOutputStream(new ByteArrayOutputStream(8)));
+        replay(mockConnection, mockFs, mockStore);
+        HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
+        assertNotNull(b.openOutputStream(0, true));
+    }
+
+    @Test(expected = DuplicateBlobException.class)
+    public void testOpenOutputStreamMissingBlob() throws Exception {
+        expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
+        expect(mockConnection.isClosed()).andReturn(false).times(2);
+        expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
+        expect(mockConnection.getFileSystem()).andReturn(mockFs).times(2);
+        expect(mockFs.exists(anyObject(Path.class))).andReturn(true);
         replay(mockConnection, mockFs, mockStore);
         HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
         assertNotNull(b.openOutputStream(0, false));
