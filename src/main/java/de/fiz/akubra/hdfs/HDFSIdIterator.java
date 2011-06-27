@@ -95,7 +95,7 @@ public class HDFSIdIterator implements Iterator<URI> {
                 }
             } catch (IOException e) {
                 log.error("Exception while updateing iterator queues", e);
-                return false;
+                throw new RuntimeException(e);
             }
         }
         return true;
