@@ -36,55 +36,52 @@ import org.apache.hadoop.fs.FileSystem;
  */
 public class HDFSBlobStore implements BlobStore {
 
-	private final URI id;
+    private final URI id;
 
-	/**
-	 * create a new {@link HDFSBlobStore} at a specific URI in {@link String}
-	 * format
-	 * 
-	 * @param id
-	 *            the {@link URI} pointing to the HDFS namenode
-	 * @throws URISyntaxException
-	 *             if the supplied {@link URI} was not valid
-	 */
-	public HDFSBlobStore(final URI uri) {
-		this.id = uri;
-	}
+    /**
+     * create a new {@link HDFSBlobStore} at a specific URI in {@link String}
+     * format
+     * 
+     * @param id
+     *            the {@link URI} pointing to the HDFS namenode
+     * @throws URISyntaxException
+     *             if the supplied {@link URI} was not valid
+     */
+    public HDFSBlobStore(final URI uri) {
+        this.id = uri;
+    }
 
-	/**
-	 * get the id
-	 * 
-	 * @return this {@link HDFSBlobStore}'s id
-	 */
-	public URI getId() {
-		return id;
-	}
+    /**
+     * get the id
+     * 
+     * @return this {@link HDFSBlobStore}'s id
+     */
+    public URI getId() {
+        return id;
+    }
 
-	/**
-	 * open a new {@link HDFSBlobStoreConnection} to a HDFS namenode
-	 * 
-	 * @param tx
-	 *            since transactions are not supported. this must be set to null
-	 * @param hints
-	 *            not used
-	 * @return a new {@link HDFSBlobStoreConnection} th this
-	 *         {@link HDFSBlobStore}'s id
-	 * @throws UnsupportedOperationException
-	 *             if the transaction parameter was not null
-	 * @throws IOException
-	 *             if the operation did not succeed
-	 */
-	public BlobStoreConnection openConnection(final Transaction tx,
-			final Map<String, String> hints)
-			throws UnsupportedOperationException, IOException {
-		if (tx != null) {
-			throw new UnsupportedOperationException(
-					"Transactions are not supported");
-		}
-		return new HDFSBlobStoreConnection(this);
-	}
+    /**
+     * open a new {@link HDFSBlobStoreConnection} to a HDFS namenode
+     * 
+     * @param tx
+     *            since transactions are not supported. this must be set to null
+     * @param hints
+     *            not used
+     * @return a new {@link HDFSBlobStoreConnection} th this
+     *         {@link HDFSBlobStore}'s id
+     * @throws UnsupportedOperationException
+     *             if the transaction parameter was not null
+     * @throws IOException
+     *             if the operation did not succeed
+     */
+    public BlobStoreConnection openConnection(final Transaction tx, final Map<String, String> hints) throws UnsupportedOperationException, IOException {
+        if (tx != null) {
+            throw new UnsupportedOperationException("Transactions are not supported");
+        }
+        return new HDFSBlobStoreConnection(this);
+    }
 
-	FileSystem openHDFSConnection() throws IOException {
-		return FileSystem.get(this.id, new Configuration());
-	}
+    FileSystem openHDFSConnection() throws IOException {
+        return FileSystem.get(this.id, new Configuration());
+    }
 }

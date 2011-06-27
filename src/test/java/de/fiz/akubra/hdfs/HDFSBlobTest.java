@@ -44,184 +44,184 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class HDFSBlobTest {
-	private HDFSBlobStore mockStore;
-	private FileSystem mockFs;
-	private HDFSBlobStoreConnection mockConnection;
-	private static URI blobUri;
-	private static URI blobStoreUri;
+    private HDFSBlobStore mockStore;
+    private FileSystem mockFs;
+    private HDFSBlobStoreConnection mockConnection;
+    private static URI blobUri;
+    private static URI blobStoreUri;
 
-	@BeforeClass
-	public static void init() throws Exception {
-		blobUri = new URI("hdfs:6f/allestest");
-		blobStoreUri = new URI("hdfs://localhost:9000/");
-	}
+    @BeforeClass
+    public static void init() throws Exception {
+        blobUri = new URI("hdfs:6f/allestest");
+        blobStoreUri = new URI("hdfs://localhost:9000/");
+    }
 
-	@Before
-	public void setup() {
-		mockFs = createMock(FileSystem.class);
-		mockStore = createMock(HDFSBlobStore.class);
-		mockConnection = createMock(HDFSBlobStoreConnection.class);
-	}
+    @Before
+    public void setup() {
+        mockFs = createMock(FileSystem.class);
+        mockStore = createMock(HDFSBlobStore.class);
+        mockConnection = createMock(HDFSBlobStoreConnection.class);
+    }
 
-	@Test
-	public void testHDFSBlob() throws Exception {
-		expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
-		expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
-		replay(mockConnection, mockFs, mockStore);
-		HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
-		assertNotNull(b);
-	}
+    @Test
+    public void testHDFSBlob() throws Exception {
+        expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
+        expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
+        replay(mockConnection, mockFs, mockStore);
+        HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
+        assertNotNull(b);
+    }
 
-	@Test
-	public void testDelete() throws Exception {
-		expect(mockConnection.getBlobStore()).andReturn(mockStore);
-		expect(mockConnection.isClosed()).andReturn(false);
-		expect(mockStore.getId()).andReturn(blobStoreUri);
-		expect(mockConnection.getFileSystem()).andReturn(mockFs).times(2);
-		expect(mockFs.delete((Path) anyObject(), anyBoolean())).andReturn(true);
-		replay(mockConnection, mockFs, mockStore);
-		HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
-		b.delete();
-	}
+    @Test
+    public void testDelete() throws Exception {
+        expect(mockConnection.getBlobStore()).andReturn(mockStore);
+        expect(mockConnection.isClosed()).andReturn(false);
+        expect(mockStore.getId()).andReturn(blobStoreUri);
+        expect(mockConnection.getFileSystem()).andReturn(mockFs).times(2);
+        expect(mockFs.delete((Path) anyObject(), anyBoolean())).andReturn(true);
+        replay(mockConnection, mockFs, mockStore);
+        HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
+        b.delete();
+    }
 
-	@Test
-	public void testExists() throws Exception {
-		expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
-		expect(mockConnection.isClosed()).andReturn(false);
-		expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
-		expect(mockConnection.getFileSystem()).andReturn(mockFs);
-		expect(mockFs.exists((Path) anyObject())).andReturn(true);
-		replay(mockConnection, mockFs, mockStore);
-		HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
-		assertTrue(b.exists());
-	}
+    @Test
+    public void testExists() throws Exception {
+        expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
+        expect(mockConnection.isClosed()).andReturn(false);
+        expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
+        expect(mockConnection.getFileSystem()).andReturn(mockFs);
+        expect(mockFs.exists((Path) anyObject())).andReturn(true);
+        replay(mockConnection, mockFs, mockStore);
+        HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
+        assertTrue(b.exists());
+    }
 
-	@Test
-	public void testGetCanonicalId() throws Exception {
-		expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
-		expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
-		expect(mockConnection.getFileSystem()).andReturn(mockFs);
-		replay(mockConnection, mockFs, mockStore);
-		HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
-		assertEquals(blobUri, b.getCanonicalId());
-	}
+    @Test
+    public void testGetCanonicalId() throws Exception {
+        expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
+        expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
+        expect(mockConnection.getFileSystem()).andReturn(mockFs);
+        replay(mockConnection, mockFs, mockStore);
+        HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
+        assertEquals(blobUri, b.getCanonicalId());
+    }
 
-	@Test
-	public void testGetConnection() throws Exception {
-		expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
-		expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
-		replay(mockConnection, mockFs, mockStore);
-		HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
-		assertEquals(mockConnection, b.getConnection());
-	}
+    @Test
+    public void testGetConnection() throws Exception {
+        expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
+        expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
+        replay(mockConnection, mockFs, mockStore);
+        HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
+        assertEquals(mockConnection, b.getConnection());
+    }
 
-	@Test
-	public void testGetId() throws Exception {
-		expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
-		expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
-		replay(mockConnection, mockFs, mockStore);
-		HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
-		assertEquals(blobUri, b.getId());
-	}
+    @Test
+    public void testGetId() throws Exception {
+        expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
+        expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
+        replay(mockConnection, mockFs, mockStore);
+        HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
+        assertEquals(blobUri, b.getId());
+    }
 
-	@Test
-	public void testGetSize() throws Exception {
-		expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
-		expect(mockConnection.isClosed()).andReturn(false).times(2);
-		expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
-		expect(mockConnection.getFileSystem()).andReturn(mockFs).times(2);
-		expect(mockFs.exists((Path) anyObject())).andReturn(true);
-		expect(mockFs.getFileStatus((Path) anyObject())).andReturn(createTestFileStatus());
-		replay(mockConnection, mockFs, mockStore);
-		HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
-		assertTrue(b.getSize() == 1024);
-	}
+    @Test
+    public void testGetSize() throws Exception {
+        expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
+        expect(mockConnection.isClosed()).andReturn(false).times(2);
+        expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
+        expect(mockConnection.getFileSystem()).andReturn(mockFs).times(2);
+        expect(mockFs.exists((Path) anyObject())).andReturn(true);
+        expect(mockFs.getFileStatus((Path) anyObject())).andReturn(createTestFileStatus());
+        replay(mockConnection, mockFs, mockStore);
+        HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
+        assertTrue(b.getSize() == 1024);
+    }
 
-	@Test
-	@SuppressWarnings("unchecked")
-	public void testMoveTo() throws Exception {
-		expect(mockConnection.getBlobStore()).andReturn(mockStore);
-		expect(mockStore.getId()).andReturn(blobStoreUri);
-		expect(mockConnection.isClosed()).andReturn(false).times(2);
-		expect(mockConnection.getFileSystem()).andReturn(mockFs).times(9);
-		expect(mockFs.mkdirs(anyObject(Path.class))).andReturn(true).times(3);
-		expect(mockFs.exists(anyObject(Path.class))).andReturn(true);
-		expect(mockFs.exists(anyObject(Path.class))).andReturn(false).times(5);
-		expect(mockFs.rename(anyObject(Path.class), anyObject(Path.class))).andReturn(true);
-		expect(mockConnection.getBlob(anyObject(URI.class), anyObject(Map.class))).andReturn(null);
-		replay(mockConnection,mockFs,mockStore);
-		HDFSBlob b=new HDFSBlob(blobUri, mockConnection);
-		URI newURI=URI.create("hdfs://localhost:9000/7f/kjahdsjahd/it-is-a-dir/moveTest");
-		b.moveTo(newURI, null);
-	}
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testMoveTo() throws Exception {
+        expect(mockConnection.getBlobStore()).andReturn(mockStore);
+        expect(mockStore.getId()).andReturn(blobStoreUri);
+        expect(mockConnection.isClosed()).andReturn(false).times(2);
+        expect(mockConnection.getFileSystem()).andReturn(mockFs).times(9);
+        expect(mockFs.mkdirs(anyObject(Path.class))).andReturn(true).times(3);
+        expect(mockFs.exists(anyObject(Path.class))).andReturn(true);
+        expect(mockFs.exists(anyObject(Path.class))).andReturn(false).times(5);
+        expect(mockFs.rename(anyObject(Path.class), anyObject(Path.class))).andReturn(true);
+        expect(mockConnection.getBlob(anyObject(URI.class), anyObject(Map.class))).andReturn(null);
+        replay(mockConnection, mockFs, mockStore);
+        HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
+        URI newURI = URI.create("hdfs://localhost:9000/7f/kjahdsjahd/it-is-a-dir/moveTest");
+        b.moveTo(newURI, null);
+    }
 
-	@Test
-	public void testOpenInputStream() throws Exception {
-		expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
-		expect(mockConnection.isClosed()).andReturn(false).times(2);
-		expect(mockConnection.getFileSystem()).andReturn(mockFs).times(2);
-		expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
-		expect(mockFs.exists((Path) anyObject())).andReturn(true);
-		byte[] buf = new byte[1024];
-		new Random().nextBytes(buf);
-		expect(mockFs.open((Path) anyObject())).andReturn(new FSDataInputStream(new SeekableInputStream(buf)));
-		replay(mockConnection, mockFs, mockStore);
-		HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
-		assertNotNull(b.openInputStream());
-	}
+    @Test
+    public void testOpenInputStream() throws Exception {
+        expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
+        expect(mockConnection.isClosed()).andReturn(false).times(2);
+        expect(mockConnection.getFileSystem()).andReturn(mockFs).times(2);
+        expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
+        expect(mockFs.exists((Path) anyObject())).andReturn(true);
+        byte[] buf = new byte[1024];
+        new Random().nextBytes(buf);
+        expect(mockFs.open((Path) anyObject())).andReturn(new FSDataInputStream(new SeekableInputStream(buf)));
+        replay(mockConnection, mockFs, mockStore);
+        HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
+        assertNotNull(b.openInputStream());
+    }
 
-	@Test
-	public void testOpenOutputStream() throws Exception {
-		expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
-		expect(mockConnection.isClosed()).andReturn(false).times(2);
-		expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
-		expect(mockConnection.getFileSystem()).andReturn(mockFs).times(2);
-		expect(mockFs.exists((Path) anyObject())).andReturn(false);
-		expect(mockFs.create((Path) anyObject())).andReturn(new FSDataOutputStream(new ByteArrayOutputStream(1024), null));
-		replay(mockConnection, mockFs, mockStore);
-		HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
-		assertNotNull(b.openOutputStream(0, false));
-	}
+    @Test
+    public void testOpenOutputStream() throws Exception {
+        expect(mockConnection.getBlobStore()).andReturn(mockStore).times(3);
+        expect(mockConnection.isClosed()).andReturn(false).times(2);
+        expect(mockStore.getId()).andReturn(blobStoreUri).times(2);
+        expect(mockConnection.getFileSystem()).andReturn(mockFs).times(2);
+        expect(mockFs.exists((Path) anyObject())).andReturn(false);
+        expect(mockFs.create((Path) anyObject())).andReturn(new FSDataOutputStream(new ByteArrayOutputStream(1024), null));
+        replay(mockConnection, mockFs, mockStore);
+        HDFSBlob b = new HDFSBlob(blobUri, mockConnection);
+        assertNotNull(b.openOutputStream(0, false));
+    }
 
-	private FileStatus createTestFileStatus() {
-		return new FileStatus(1024, false, 0, 0, 0, new Path(blobStoreUri + blobUri.toASCIIString().substring(5)));
-	}
+    private FileStatus createTestFileStatus() {
+        return new FileStatus(1024, false, 0, 0, 0, new Path(blobStoreUri + blobUri.toASCIIString().substring(5)));
+    }
 
-	public class SeekableInputStream extends ByteArrayInputStream implements PositionedReadable, Seekable {
-		public SeekableInputStream(byte[] buf) {
-			super(buf);
-		}
+    public class SeekableInputStream extends ByteArrayInputStream implements PositionedReadable, Seekable {
+        public SeekableInputStream(byte[] buf) {
+            super(buf);
+        }
 
-		@Override
-		public int read(long position, byte[] buffer, int offset, int length) throws IOException {
-			return 0;
-		}
+        @Override
+        public int read(long position, byte[] buffer, int offset, int length) throws IOException {
+            return 0;
+        }
 
-		@Override
-		public void readFully(long position, byte[] buffer, int offset, int length) throws IOException {
-		}
+        @Override
+        public void readFully(long position, byte[] buffer, int offset, int length) throws IOException {
+        }
 
-		@Override
-		public void readFully(long position, byte[] buffer) throws IOException {
-		}
+        @Override
+        public void readFully(long position, byte[] buffer) throws IOException {
+        }
 
-		@Override
-		public void seek(long pos) throws IOException {
-			// TODO Auto-generated method stub
+        @Override
+        public void seek(long pos) throws IOException {
+            // TODO Auto-generated method stub
 
-		}
+        }
 
-		@Override
-		public long getPos() throws IOException {
-			// TODO Auto-generated method stub
-			return 0;
-		}
+        @Override
+        public long getPos() throws IOException {
+            // TODO Auto-generated method stub
+            return 0;
+        }
 
-		@Override
-		public boolean seekToNewSource(long targetPos) throws IOException {
-			// TODO Auto-generated method stub
-			return false;
-		}
+        @Override
+        public boolean seekToNewSource(long targetPos) throws IOException {
+            // TODO Auto-generated method stub
+            return false;
+        }
 
-	}
+    }
 }

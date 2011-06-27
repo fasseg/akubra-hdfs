@@ -28,34 +28,34 @@ import org.junit.Test;
 
 public class HDFSBlobStoreTest {
 
-	private static URI storeUri;
-	private HDFSBlobStore store;
+    private static URI storeUri;
+    private HDFSBlobStore store;
 
-	@BeforeClass
-	public static void setup() throws Exception {
-		storeUri = new URI("hdfs://example.com:9000");
-	}
+    @BeforeClass
+    public static void setup() throws Exception {
+        storeUri = new URI("hdfs://example.com:9000");
+    }
 
-	@Before
-	public void init() throws Exception {
-		store = new HDFSBlobStore(storeUri);
-	}
+    @Before
+    public void init() throws Exception {
+        store = new HDFSBlobStore(storeUri);
+    }
 
-	@Test
-	public void testHDFSBlobStoreString() throws Exception {
-		assertNotNull(store);
-	}
+    @Test
+    public void testHDFSBlobStoreString() throws Exception {
+        assertNotNull(store);
+    }
 
-	@Test
-	public void testGetId() throws Exception {
-		assertNotNull(store);
-		assertEquals(storeUri, store.getId());
-	}
+    @Test
+    public void testGetId() throws Exception {
+        assertNotNull(store);
+        assertEquals(storeUri, store.getId());
+    }
 
-	@Test
-	public void testOpenConnection() throws Exception {
-		assertNotNull(store.openConnection(null, null));
-		assertFalse(store.openConnection(null, null).isClosed());
-	}
+    @Test
+    public void testOpenConnection() throws Exception {
+        assertNotNull(store.openConnection(null, null));
+        assertFalse(store.openConnection(null, null).isClosed());
+    }
 
 }
