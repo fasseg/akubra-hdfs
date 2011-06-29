@@ -74,7 +74,7 @@ public class HDFSBlobStoreConnectionTest {
         expect(mockStore.openHDFSConnection()).andReturn(mockFs);
         expect(mockStore.getId()).andReturn(new URI("hdfs://localhost:9000/")).times(3);
         replay(mockStore, mockFs);
-        HDFSBlob b = (HDFSBlob) connection.getBlob(new URI("hdfs:test"), null);
+        HDFSBlob b = (HDFSBlob) connection.getBlob(new URI("hdfs://localhost:9000/test"), null);
         assertNotNull(b);
         assertTrue(b.getConnection() == connection);
     }

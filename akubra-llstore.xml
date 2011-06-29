@@ -31,16 +31,7 @@
     <constructor-arg><ref bean="fsObjectStoreMapper"/></constructor-arg>
   </bean>
 
-  <!-- original akubra fs store bean
-  <bean name="fsObjectStore"
-        class="org.akubraproject.fs.FSBlobStore"
-        singleton="true">
-    <constructor-arg value="urn:example.org:fsObjectStore"/>
-    <constructor-arg value="/home/ruckus/dev/apps/fedora/data/objectStore"/>
-  </bean>
-  -->
-
-  <!-- akubra-hdfs bean -->
+    <!-- akubra-hdfs bean -->
   <bean name="fsObjectStore"
         class="de.fiz.akubra.hdfs.HDFSBlobStore"
         singleton="true">
@@ -48,10 +39,11 @@
     <constructor-arg value="hdfs://localhost:9000/fedora/objects/"/>
   </bean>
 
+	<!--  hdfs id mapper -->
   <bean name="fsObjectStoreMapper"
-        class="org.fcrepo.server.storage.lowlevel.akubra.HashPathIdMapper"
+        class="de.fiz.akubra.hdfs.HDFSIdMapper"
         singleton="true">
-    <constructor-arg value="##"/>
+    <constructor-arg value=fsObjectStore"/>
   </bean>
   
   <bean name="datastreamStore"
@@ -62,25 +54,18 @@
     <constructor-arg><ref bean="fsDatastreamStoreMapper"/></constructor-arg>
   </bean>
 
-  <!-- original akubra-fs datastream store
-  <bean name="fsDatastreamStore"
-        class="org.akubraproject.fs.FSBlobStore"
-        singleton="true">
-    <constructor-arg value="urn:example.org:fsDatastreamStore"/>
-    <constructor-arg value="/home/ruckus/dev/apps/fedora/data/datastreamStore"/>
-  </bean>
-  --> 
-
+  
   <bean name="fsDatastreamStore"
         class="de.fiz.akubra.hdfs.HDFSBlobStore"
         singleton="true">
     <constructor-arg value="hdfs://localhost:9000/fedora/datastreams/"/>
   </bean>
 
+	<!--  hdfs id mapper -->
   <bean name="fsDatastreamStoreMapper"
-        class="org.fcrepo.server.storage.lowlevel.akubra.HashPathIdMapper"
+        class="de.fiz.akubra.hdfs.HDFSIdMapper"
         singleton="true">
-    <constructor-arg value="##"/>
+    <constructor-arg value=fsDatastreamStore"/>
   </bean>
 
 </beans>

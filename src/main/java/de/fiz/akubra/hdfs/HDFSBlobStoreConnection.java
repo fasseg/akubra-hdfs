@@ -92,7 +92,10 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
             // return getBlob(new ByteArrayInputStream(new byte[0]),0, null);
             return new HDFSBlob(tmp, this);
         }
-        log.debug("fetching blob " + uri.toASCIIString());
+        log.debug("fetching blob " + uri);
+        if (uri.getRawSchemeSpecificPart().startsWith("info:")){
+            log.debug("special object " + uri);
+        }
         if (!uri.toASCIIString().startsWith("hdfs:")) {
             throw new UnsupportedIdException(uri, "HDFS URIs have to start with 'hdfs:'");
         }

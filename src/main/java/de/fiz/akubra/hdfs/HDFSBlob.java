@@ -61,7 +61,7 @@ class HDFSBlob implements Blob {
         this.conn = conn;
         this.storeId = this.conn.getBlobStore().getId();
         this.uri = uri;
-        this.path = new Path(this.uri);
+        this.path = new Path(this.uri.toASCIIString());
         log.debug("opening blob " + uri.toASCIIString() + " at " + this.path.toString());
     }
 

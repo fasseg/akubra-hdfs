@@ -62,6 +62,11 @@
 			<artifactId>logback-classic</artifactId>
 			<version>0.9.18</version>
 		</dependency>
+		<dependency>
+			<groupId>org.akubraproject</groupId>
+			<artifactId>akubra-map</artifactId>
+			<version>0.3</version>
+		</dependency>
 	</dependencies>
 	<description>Akubra implementaion for storing data on an underlying Hadoop filesystem.</description>
 	<organization>

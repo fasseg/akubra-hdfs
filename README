@@ -8,7 +8,9 @@ akubra-hdfs is still in an early development state and in no way ready for produ
 
 In order to use akubra-hdfs with a fedora-commons repository it's enough to change the file 
 $FEDORA_HOME/server/config/akubra-llstore.xml and edit the two beans 'fsObjectStore' 
-and 'fsDataStreamStore' to use the class 'de.fiz.akubra.hdfs.HDFSBlobStore':
+and 'fsDataStreamStore' to use the class 'de.fiz.akubra.hdfs.HDFSBlobStore'and the two beans 
+'fsObjectStoreMapper' and fsDatastreamStoreMapper' to be of class 'de.fiz.akubra.hdfs.HDFSIdMapper':
+
 
   <bean name="fsObjectStore"
         class="de.fiz.akubra.hdfs.HDFSBlobStore"
@@ -16,12 +18,26 @@ and 'fsDataStreamStore' to use the class 'de.fiz.akubra.hdfs.HDFSBlobStore':
     <!-- the hdfs namenode URI goes here -->
     <constructor-arg value="hdfs://localhost:9000/fedora/objects"/>
   </bean>
+  
+    <bean name="fsObjectStoreMapper"
+        class="de.fiz.akubra.hdfs.HDFSIdMapper"
+        singleton="true">
+    <constructor-arg value=fsObjectStore"/>
+  </bean>
+  
+
 
   <bean name="fsDatastreamStore"
         class="de.fiz.akubra.hdfs.HDFSBlobStore"
         singleton="true">
     <!-- the hdfs namenode URI goes here -->
     <constructor-arg value="hdfs://localhost:9000/fedora/datastreams"/>
+  </bean>
+
+  <bean name="fsDatastreamStoreMapper"
+        class="de.fiz.akubra.hdfs.HDFSIdMapper"
+        singleton="true">
+    <constructor-arg value=fsDatastreamStore"/>
   </bean>
 
 
