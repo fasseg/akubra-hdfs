@@ -31,7 +31,7 @@
     <constructor-arg><ref bean="fsObjectStoreMapper"/></constructor-arg>
   </bean>
 
-    <!-- akubra-hdfs bean -->
+    <!-- akubra-hdfs bean for objects -->
   <bean name="fsObjectStore"
         class="de.fiz.akubra.hdfs.HDFSBlobStore"
         singleton="true">
@@ -43,7 +43,7 @@
   <bean name="fsObjectStoreMapper"
         class="de.fiz.akubra.hdfs.HDFSIdMapper"
         singleton="true">
-    <constructor-arg value=fsObjectStore"/>
+    <constructor-arg ref="fsObjectStore"/>
   </bean>
   
   <bean name="datastreamStore"
@@ -54,7 +54,7 @@
     <constructor-arg><ref bean="fsDatastreamStoreMapper"/></constructor-arg>
   </bean>
 
-  
+  <!-- akubra-hdfs bean for datastreams -->
   <bean name="fsDatastreamStore"
         class="de.fiz.akubra.hdfs.HDFSBlobStore"
         singleton="true">
@@ -65,7 +65,7 @@
   <bean name="fsDatastreamStoreMapper"
         class="de.fiz.akubra.hdfs.HDFSIdMapper"
         singleton="true">
-    <constructor-arg value=fsDatastreamStore"/>
+    <constructor-arg ref="fsDatastreamStore"/>
   </bean>
 
 </beans>
