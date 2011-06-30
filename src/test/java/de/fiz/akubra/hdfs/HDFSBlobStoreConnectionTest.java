@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class HDFSBlobStoreConnectionTest {
@@ -64,6 +65,7 @@ public class HDFSBlobStoreConnectionTest {
     @Test
     public void testClose() throws Exception {
         expect(mockStore.openHDFSConnection()).andReturn(mockFs);
+        expect(mockStore.getId()).andReturn(new URI("hdfs://localhost:9000/"));
         mockFs.close();
         replay(mockStore, mockFs);
         connection.close();
@@ -105,13 +107,15 @@ public class HDFSBlobStoreConnectionTest {
     }
 
     @Test
-    public void testIsClosed() throws Exception {
+    @Ignore
+    public void testReopen() throws Exception {
         expect(mockStore.openHDFSConnection()).andReturn(mockFs);
+        expect(mockStore.getId()).andReturn(new URI("hdfs://localhost:9000/"));
         mockFs.close();
         replay(mockStore, mockFs);
         assertFalse(connection.isClosed());
         connection.close();
-        assertTrue(connection.isClosed());
+        assertFalse(connection.isClosed());
     }
 
     @Test

@@ -63,13 +63,16 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
     /**
      * close this connection
      */
-    public void close() {
+    @Override
+    public synchronized void close() {
         this.closed = true;
-        try {
-            getFileSystem().close();
-        } catch (IOException e) {
-            log.error("Exception while closing hdfs connection");
-        }
+        //TODO: Close filesystem
+//        try {
+//            log.debug("closing filesystem");
+//            getFileSystem().close();
+//        } catch (IOException e) {
+//            log.error("Exception while closing hdfs connection");
+//        }
     }
 
     /**
@@ -182,9 +185,13 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 
     FileSystem getFileSystem() throws IOException {
         // lazy init for testability
-        if (hdfs == null) {
+        if (hdfs == null || closed) {
             hdfs = store.openHDFSConnection();
+            closed=false;
+            log.debug("opened new hdfs connection to " + store.getId());
         }
         return hdfs;
     }
+
+
 }
