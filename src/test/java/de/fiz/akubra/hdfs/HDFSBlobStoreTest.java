@@ -29,12 +29,13 @@ import org.junit.Test;
 public class HDFSBlobStoreTest {
 
     private static URI storeUri;
-    private HDFSBlobStore store;
 
     @BeforeClass
     public static void setup() throws Exception {
         storeUri = new URI("hdfs://example.com:9000");
     }
+
+    private HDFSBlobStore store;
 
     @Before
     public void init() throws Exception {
@@ -42,14 +43,14 @@ public class HDFSBlobStoreTest {
     }
 
     @Test
-    public void testHDFSBlobStoreString() throws Exception {
-        assertNotNull(store);
-    }
-
-    @Test
     public void testGetId() throws Exception {
         assertNotNull(store);
         assertEquals(storeUri, store.getId());
+    }
+
+    @Test
+    public void testHDFSBlobStoreString() throws Exception {
+        assertNotNull(store);
     }
 
     @Test

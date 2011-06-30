@@ -38,6 +38,31 @@ public class HDFSIdIteratorTest {
     private FileSystem mockFs;
     private URI storeURI;
 
+    private FileStatus[] createTestFiles(String prefix, boolean addDir) {
+        List<FileStatus> files = new ArrayList<FileStatus>();
+        files.add(new FileStatus(1402, false, 1, 67108864l, 0l, new Path(prefix + "/test1")));
+        files.add(new FileStatus(1602, false, 1, 67108864l, 0l, new Path(prefix + "/testöÄüöl")));
+        files.add(new FileStatus(102, false, 1, 67108864l, 0l, new Path(prefix + "/test&")));
+        files.add(new FileStatus(12, false, 1, 67108864l, 0l, new Path(prefix + "/test with space")));
+        files.add(new FileStatus(1102, false, 1, 67108864l, 0l, new Path(prefix + "/testËÚæêó")));
+        files.add(new FileStatus(142, false, 1, 67108864l, 0l, new Path(prefix + "/test6")));
+        if (addDir) {
+            files.add(new FileStatus(142, true, 1, 67108864l, 0l, new Path(prefix + "/foo"))); // a
+        }
+        return (FileStatus[]) files.toArray(new FileStatus[6]);
+    }
+
+    private boolean find(URI needle, FileStatus[]... haystacks) {
+        for (FileStatus[] haystack : haystacks) {
+            for (FileStatus s : haystack) {
+                if (s.getPath().toUri().equals(needle)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     @Before
     public void setUp() throws Exception {
         mockFs = createMock(FileSystem.class);
@@ -67,30 +92,5 @@ public class HDFSIdIteratorTest {
     public void testRemove() {
         HDFSIdIterator it = new HDFSIdIterator(mockFs, "test");
         it.remove();
-    }
-
-    private FileStatus[] createTestFiles(String prefix, boolean addDir) {
-        List<FileStatus> files = new ArrayList<FileStatus>();
-        files.add(new FileStatus(1402, false, 1, 67108864l, 0l, new Path(prefix + "/test1")));
-        files.add(new FileStatus(1602, false, 1, 67108864l, 0l, new Path(prefix + "/testöÄüöl")));
-        files.add(new FileStatus(102, false, 1, 67108864l, 0l, new Path(prefix + "/test&")));
-        files.add(new FileStatus(12, false, 1, 67108864l, 0l, new Path(prefix + "/test with space")));
-        files.add(new FileStatus(1102, false, 1, 67108864l, 0l, new Path(prefix + "/testËÚæêó")));
-        files.add(new FileStatus(142, false, 1, 67108864l, 0l, new Path(prefix + "/test6")));
-        if (addDir) {
-            files.add(new FileStatus(142, true, 1, 67108864l, 0l, new Path(prefix + "/foo"))); // a
-        }
-        return (FileStatus[]) files.toArray(new FileStatus[6]);
-    }
-
-    private boolean find(URI needle, FileStatus[]... haystacks) {
-        for (FileStatus[] haystack : haystacks) {
-            for (FileStatus s : haystack) {
-                if (s.getPath().toUri().equals(needle)) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 }

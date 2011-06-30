@@ -66,44 +66,13 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
     @Override
     public synchronized void close() {
         this.closed = true;
-        //TODO: Close filesystem
-//        try {
-//            log.debug("closing filesystem");
-//            getFileSystem().close();
-//        } catch (IOException e) {
-//            log.error("Exception while closing hdfs connection");
-//        }
-    }
-
-    /**
-     * fetch a {@link HDFSBlob} from the {@link HDFSBlobStore}
-     * 
-     * @param uri
-     *            the {@link URI} of the {@link HDFSBlob}
-     * @param hints
-     *            not used
-     * @throws UnsupportedIdException
-     *             if the supplied {@link URI} was not valid
-     */
-    public Blob getBlob(final URI uri, final Map<String, String> hints) throws UnsupportedIdException, IOException {
-        if (closed) {
-            throw new IllegalStateException("Unable to fetch Blob, because connection is closed.");
-        }
-        if (uri == null) {
-            URI tmp = URI.create(store.getId() + UUID.randomUUID().toString());
-            log.debug("creating new Blob uri " + tmp.toASCIIString());
-            // return getBlob(new ByteArrayInputStream(new byte[0]),0, null);
-            return new HDFSBlob(tmp, this);
-        }
-        log.debug("fetching blob " + uri);
-        if (uri.getRawSchemeSpecificPart().startsWith("info:")){
-            log.debug("special object " + uri);
-        }
-        if (!uri.toASCIIString().startsWith("hdfs:")) {
-            throw new UnsupportedIdException(uri, "HDFS URIs have to start with 'hdfs:'");
-        }
-        HDFSBlob blob = new HDFSBlob(uri, this);
-        return blob;
+        // TODO: Close filesystem
+        // try {
+        // log.debug("closing filesystem");
+        // getFileSystem().close();
+        // } catch (IOException e) {
+        // log.error("Exception while closing hdfs connection");
+        // }
     }
 
     /**
@@ -141,12 +110,53 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
     }
 
     /**
+     * fetch a {@link HDFSBlob} from the {@link HDFSBlobStore}
+     * 
+     * @param uri
+     *            the {@link URI} of the {@link HDFSBlob}
+     * @param hints
+     *            not used
+     * @throws UnsupportedIdException
+     *             if the supplied {@link URI} was not valid
+     */
+    public Blob getBlob(final URI uri, final Map<String, String> hints) throws UnsupportedIdException, IOException {
+        if (closed) {
+            throw new IllegalStateException("Unable to fetch Blob, because connection is closed.");
+        }
+        if (uri == null) {
+            URI tmp = URI.create(store.getId() + UUID.randomUUID().toString());
+            log.debug("creating new Blob uri " + tmp.toASCIIString());
+            // return getBlob(new ByteArrayInputStream(new byte[0]),0, null);
+            return new HDFSBlob(tmp, this);
+        }
+        log.debug("fetching blob " + uri);
+        if (uri.getRawSchemeSpecificPart().startsWith("info:")) {
+            log.debug("special object " + uri);
+        }
+        if (!uri.toASCIIString().startsWith("hdfs:")) {
+            throw new UnsupportedIdException(uri, "HDFS URIs have to start with 'hdfs:'");
+        }
+        HDFSBlob blob = new HDFSBlob(uri, this);
+        return blob;
+    }
+
+    /**
      * get the associated {@link HDFSBlobStore}
      * 
      * @return the {@link HDFSBlobStore} used
      */
     public BlobStore getBlobStore() {
         return store;
+    }
+
+    FileSystem getFileSystem() throws IOException {
+        // lazy init for testability
+        if (hdfs == null || closed) {
+            hdfs = store.openHDFSConnection();
+            closed = false;
+            log.debug("opened new hdfs connection to " + store.getId());
+        }
+        return hdfs;
     }
 
     /**
@@ -182,16 +192,5 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
     public void sync() throws UnsupportedOperationException {
         throw new UnsupportedOperationException("not yet implemented");
     }
-
-    FileSystem getFileSystem() throws IOException {
-        // lazy init for testability
-        if (hdfs == null || closed) {
-            hdfs = store.openHDFSConnection();
-            closed=false;
-            log.debug("opened new hdfs connection to " + store.getId());
-        }
-        return hdfs;
-    }
-
 
 }
