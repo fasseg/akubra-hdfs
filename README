@@ -22,7 +22,7 @@ and 'fsDataStreamStore' to use the class 'de.fiz.akubra.hdfs.HDFSBlobStore'and t
     <bean name="fsObjectStoreMapper"
         class="de.fiz.akubra.hdfs.HDFSIdMapper"
         singleton="true">
-    <constructor-arg value=fsObjectStore"/>
+    <constructor-arg ref="fsObjectStore"/>
   </bean>
   
 
@@ -37,7 +37,7 @@ and 'fsDataStreamStore' to use the class 'de.fiz.akubra.hdfs.HDFSBlobStore'and t
   <bean name="fsDatastreamStoreMapper"
         class="de.fiz.akubra.hdfs.HDFSIdMapper"
         singleton="true">
-    <constructor-arg value=fsDatastreamStore"/>
+    <constructor-arg ref="fsDatastreamStore"/>
   </bean>
 
 
