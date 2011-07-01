@@ -42,7 +42,6 @@ public class HDFSBlobStoreConnectionTest {
 
     private HDFSBlobStore mockStore;
     private FileSystem mockFs;
-    private HDFSBlobStoreConnection connection;
 
     private FileStatus[] createTestFileStatus() {
         FileStatus[] states = new FileStatus[] { new FileStatus(1024, false, 0, 0, 0, new Path("hdfs://test1")),
@@ -55,19 +54,24 @@ public class HDFSBlobStoreConnectionTest {
     public void setUp() throws Exception {
         mockStore = createMock(HDFSBlobStore.class);
         mockFs = createMock(FileSystem.class);
-        connection = new HDFSBlobStoreConnection(mockStore);
-        Field f = HDFSBlobStoreConnection.class.getDeclaredField("hdfs");
-        f.setAccessible(true);
-        f.set(connection, mockFs);
     }
 
     @Test
     public void testClose() throws Exception {
         expect(mockStore.openHDFSConnection()).andReturn(mockFs);
-        expect(mockStore.getId()).andReturn(new URI("hdfs://localhost:9000/"));
         mockFs.close();
+        mockStore.releaseHDFSConnection(mockFs);
         replay(mockStore, mockFs);
+        HDFSBlobStoreConnection connection = createTestConnection();
         connection.close();
+    }
+
+    private HDFSBlobStoreConnection createTestConnection() throws Exception {
+        HDFSBlobStoreConnection connection=new HDFSBlobStoreConnection(mockStore);
+        Field f = HDFSBlobStoreConnection.class.getDeclaredField("hdfs");
+        f.setAccessible(true);
+        f.set(connection, mockFs);
+        return connection;
     }
 
     @Test
@@ -78,6 +82,7 @@ public class HDFSBlobStoreConnectionTest {
         expect(mockFs.create((Path) anyObject())).andReturn(new FSDataOutputStream(new ByteArrayOutputStream(20), null));
         expect(mockFs.exists((Path) anyObject())).andReturn(true);
         replay(mockStore, mockFs);
+        HDFSBlobStoreConnection connection = createTestConnection();
         byte[] buf = new byte[4096];
         new Random().nextBytes(buf);
         HDFSBlob b = (HDFSBlob) connection.getBlob(new ByteArrayInputStream(buf), 4096, null);
@@ -91,6 +96,7 @@ public class HDFSBlobStoreConnectionTest {
         expect(mockStore.openHDFSConnection()).andReturn(mockFs);
         expect(mockStore.getId()).andReturn(new URI("hdfs://localhost:9000/")).times(3);
         replay(mockStore, mockFs);
+        HDFSBlobStoreConnection connection = createTestConnection();
         HDFSBlob b = (HDFSBlob) connection.getBlob(new URI("hdfs://localhost:9000/test"), null);
         assertNotNull(b);
         assertTrue(b.getConnection() == connection);
@@ -100,6 +106,7 @@ public class HDFSBlobStoreConnectionTest {
     public void testGetBlobStore() throws Exception {
         expect(mockStore.openHDFSConnection()).andReturn(mockFs);
         replay(mockStore, mockFs);
+        HDFSBlobStoreConnection connection = createTestConnection();
         assertNotNull(connection.getBlobStore());
         assertTrue(connection.getBlobStore() == mockStore);
         assertTrue(connection.getBlobStore() instanceof HDFSBlobStore);
@@ -107,7 +114,9 @@ public class HDFSBlobStoreConnectionTest {
 
     @Test
     public void testGetFileSystem() throws Exception {
+        expect(mockStore.openHDFSConnection()).andReturn(mockFs);
         replay(mockStore, mockFs);
+        HDFSBlobStoreConnection connection = createTestConnection();
         assertNotNull(connection.getFileSystem());
         assertTrue(connection.getFileSystem() == mockFs);
     }
@@ -117,6 +126,7 @@ public class HDFSBlobStoreConnectionTest {
         expect(mockStore.openHDFSConnection()).andReturn(mockFs);
         expect(mockStore.getId()).andReturn(new URI("hdfs://localhost:9000/"));
         replay(mockStore, mockFs);
+        HDFSBlobStoreConnection connection = createTestConnection();
         assertNotNull(connection);
     }
 
@@ -126,25 +136,28 @@ public class HDFSBlobStoreConnectionTest {
         expect(mockFs.listStatus((Path) anyObject())).andReturn(createTestFileStatus()).times(2);
         expect(mockStore.getId()).andReturn(URI.create("hdfs://localhost:9000/")).times(2);
         replay(mockStore, mockFs);
+        HDFSBlobStoreConnection connection = createTestConnection();
         HDFSIdIterator it = (HDFSIdIterator) connection.listBlobIds("/");
         assertNotNull(it);
     }
 
     @Test
-    @Ignore
     public void testReopen() throws Exception {
         expect(mockStore.openHDFSConnection()).andReturn(mockFs);
         expect(mockStore.getId()).andReturn(new URI("hdfs://localhost:9000/"));
         mockFs.close();
+        mockStore.releaseHDFSConnection(mockFs);
         replay(mockStore, mockFs);
+        HDFSBlobStoreConnection connection = createTestConnection();
         assertFalse(connection.isClosed());
         connection.close();
-        assertFalse(connection.isClosed());
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void testSync() throws Exception {
+        expect(mockStore.openHDFSConnection()).andReturn(mockFs);
         replay(mockStore, mockFs);
+        HDFSBlobStoreConnection connection = createTestConnection();
         connection.sync();
     }
 }

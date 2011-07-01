@@ -19,6 +19,8 @@ package de.fiz.akubra.hdfs;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.transaction.Transaction;
@@ -35,6 +37,7 @@ import org.apache.hadoop.fs.FileSystem;
  * 
  */
 public class HDFSBlobStore implements BlobStore {
+    private List<FileSystem> hdfsPool=new ArrayList<FileSystem>();
 
     private final URI id;
 
@@ -80,8 +83,15 @@ public class HDFSBlobStore implements BlobStore {
         }
         return new HDFSBlobStoreConnection(this);
     }
+    void releaseHDFSConnection(FileSystem hdfs){
+        hdfsPool.add(hdfs);
+    }
 
     FileSystem openHDFSConnection() throws IOException {
-        return FileSystem.get(this.id, new Configuration());
+        if (hdfsPool.isEmpty()){
+            return FileSystem.get(this.id, new Configuration());
+        }else{
+            return hdfsPool.remove(0);
+        }
     }
 }

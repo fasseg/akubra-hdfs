@@ -53,10 +53,4 @@ public class HDFSBlobStoreTest {
         assertNotNull(store);
     }
 
-    @Test
-    public void testOpenConnection() throws Exception {
-        assertNotNull(store.openConnection(null, null));
-        assertFalse(store.openConnection(null, null).isClosed());
-    }
-
 }
