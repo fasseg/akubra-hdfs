@@ -20,8 +20,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import javax.transaction.Transaction;
 
@@ -37,7 +39,7 @@ import org.apache.hadoop.fs.FileSystem;
  * 
  */
 public class HDFSBlobStore implements BlobStore {
-    private List<FileSystem> hdfsPool=new ArrayList<FileSystem>();
+    private  FileSystem hdfs;
 
     private final URI id;
 
@@ -83,15 +85,11 @@ public class HDFSBlobStore implements BlobStore {
         }
         return new HDFSBlobStoreConnection(this);
     }
-    void releaseHDFSConnection(FileSystem hdfs){
-        hdfsPool.add(hdfs);
-    }
 
-    FileSystem openHDFSConnection() throws IOException {
-        if (hdfsPool.isEmpty()){
-            return FileSystem.get(this.id, new Configuration());
-        }else{
-            return hdfsPool.remove(0);
+    synchronized FileSystem getFilesystem() throws IOException {
+        if (hdfs==null){
+            hdfs=FileSystem.get(this.id, new Configuration());
         }
+        return hdfs;
     }
 }

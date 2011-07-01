@@ -44,6 +44,7 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
 
     private final HDFSBlobStore store;
     private FileSystem hdfs;
+    private boolean closed=false;
     private static final Logger log = LoggerFactory.getLogger(HDFSBlobStoreConnection.class);
 
     /**
@@ -57,7 +58,7 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
      */
     public HDFSBlobStoreConnection(final HDFSBlobStore store) throws IOException {
         this.store = store;
-        hdfs=store.openHDFSConnection();
+        hdfs=this.getFileSystem();
     }
 
     /**
@@ -65,7 +66,7 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
      */
     @Override
     public void close() {
-        store.releaseHDFSConnection(hdfs);
+        closed=true;
         hdfs=null;
     }
 
@@ -83,6 +84,9 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
      *             if the operation did not succeed
      */
     public Blob getBlob(final InputStream in, final long estimatedSize, final Map<String, String> hints) throws IOException {
+        if (isClosed()){
+            throw new IllegalStateException("Connection to hdfs is closed");
+        }
         if (in == null) {
             throw new NullPointerException("inputstream can not be null");
         }
@@ -100,6 +104,7 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
         }
     }
 
+
     /**
      * fetch a {@link HDFSBlob} from the {@link HDFSBlobStore}
      * 
@@ -111,6 +116,9 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
      *             if the supplied {@link URI} was not valid
      */
     public Blob getBlob(final URI uri, final Map<String, String> hints) throws UnsupportedIdException, IOException {
+        if (isClosed()){
+            throw new IllegalStateException("Connection to hdfs is closed");
+        }
         if (uri == null) {
             URI tmp = URI.create(store.getId() + UUID.randomUUID().toString());
             log.debug("creating new Blob uri " + tmp.toASCIIString());
@@ -140,7 +148,7 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
     FileSystem getFileSystem() throws IOException {
         // lazy init for testability
         if (hdfs == null) {
-            hdfs = store.openHDFSConnection();
+            hdfs = store.getFilesystem();
             log.debug("opened new hdfs connection to " + store.getId());
         }
         return hdfs;
@@ -152,7 +160,7 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
      * @return true if the connection is open
      */
     public boolean isClosed() {
-        return hdfs==null;
+        return closed;
     }
 
     /**
@@ -164,6 +172,9 @@ class HDFSBlobStoreConnection implements BlobStoreConnection {
      *             if the operation did not succeed
      */
     public Iterator<URI> listBlobIds(final String filterPrefix) throws IOException {
+        if (isClosed()){
+            throw new IllegalStateException("Connection to hdfs is closed");
+        }
         return new HDFSIdIterator(this.getFileSystem(), filterPrefix);
     }
 
