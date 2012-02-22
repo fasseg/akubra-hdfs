@@ -87,7 +87,7 @@ public class HDFSIdIterator implements Iterator<URI> {
             Path dir = dirQueue.poll();
             try {
                 for (FileStatus stat : hdfs.listStatus(dir)) {
-                    if (stat.isDirectory()) {
+                    if (stat.isDir()) {
                         dirQueue.add(stat.getPath());
                     } else if (stat.getPath().getName().startsWith(prefix)) {
                         fileQueue.add(stat.getPath());
