@@ -7,10 +7,9 @@ as an underlying object and datastream storage.
 akubra-hdfs is still in an early development state and in no way ready for production use!
 
 Installation instructions (Fedora Commons 3.6.2, Hadoop 1.0.3):
-===============================================================
+---------------------------------------------------------------
 
-Dependencies
-------------
+### Dependencies
 
 Copy the following dependencies to your fedora webapp's WEB-INF/lib directory:
 * akubra-hdfs-0.0.1-SNAPSHOT.jar (can be found in target/ after building the project)
@@ -20,41 +19,38 @@ Copy the following dependencies to your fedora webapp's WEB-INF/lib directory:
 * commons-lang-2.4.jar from $HADOOP_HOME/lib/ 
 
 
-Configuration
--------------
+### Configuration
 
 Open the file $FEDORA_HOME/server/config/spring/akubra-llstore.xml and edit the two beans 'fsObjectStore' 
 and 'fsDataStreamStore' to use the class 'de.fiz.akubra.hdfs.HDFSBlobStore'and the two beans 
 'fsObjectStoreMapper' and fsDatastreamStoreMapper' to be of class 'de.fiz.akubra.hdfs.HDFSIdMapper':
 
 
-  <bean name="fsObjectStore"
+  ```<bean name="fsObjectStore"
         class="de.fiz.akubra.hdfs.HDFSBlobStore"
         singleton="true">
-    <!-- the hdfs namenode URI goes here -->
     <constructor-arg value="hdfs://localhost:9000/fedora/objects"/>
-  </bean>
+  </bean>```
   
-    <bean name="fsObjectStoreMapper"
+   ```<bean name="fsObjectStoreMapper"
         class="de.fiz.akubra.hdfs.HDFSIdMapper"
         singleton="true">
     <constructor-arg ref="fsObjectStore"/>
-  </bean>
+  </bean>```
   
 
 
-  <bean name="fsDatastreamStore"
+  ```<bean name="fsDatastreamStore"
         class="de.fiz.akubra.hdfs.HDFSBlobStore"
         singleton="true">
-    <!-- the hdfs namenode URI goes here -->
     <constructor-arg value="hdfs://localhost:9000/fedora/datastreams"/>
-  </bean>
+  </bean>```
 
-  <bean name="fsDatastreamStoreMapper"
+  ```<bean name="fsDatastreamStoreMapper"
         class="de.fiz.akubra.hdfs.HDFSIdMapper"
         singleton="true">
     <constructor-arg ref="fsDatastreamStore"/>
-  </bean>
+  </bean>```
 
 
 
