@@ -9,13 +9,19 @@ akubra-hdfs is still in an early development state and in no way ready for produ
 Installation instructions (Fedora Commons 3.6.2, Hadoop 1.0.3):
 ===============================================================
 
-Dependencies:
+Dependencies
+------------
+
 Copy the following dependencies to your fedora webapp's WEB-INF/lib directory:
- * akubra-hdfs-0.0.1-SNAPSHOT.jar (can be found in target/ after building the project)
- * hadoop-core-1.0.3.jar from $HADOOP_HOME/
- * hadoop-client-1.0.3.jar from $HADOOP_HOME/
- * commons-configuration-1.6.jar from $HADOOP_HOME/lib/
- * commons-lang-2.4.jar from $HADOOP_HOME/lib/ 
+* akubra-hdfs-0.0.1-SNAPSHOT.jar (can be found in target/ after building the project)
+* hadoop-core-1.0.3.jar from $HADOOP_HOME/
+* hadoop-client-1.0.3.jar from $HADOOP_HOME/
+* commons-configuration-1.6.jar from $HADOOP_HOME/lib/
+* commons-lang-2.4.jar from $HADOOP_HOME/lib/ 
+
+
+Configuration
+-------------
 
 Open the file $FEDORA_HOME/server/config/spring/akubra-llstore.xml and edit the two beans 'fsObjectStore' 
 and 'fsDataStreamStore' to use the class 'de.fiz.akubra.hdfs.HDFSBlobStore'and the two beans 
@@ -53,6 +59,4 @@ and 'fsDataStreamStore' to use the class 'de.fiz.akubra.hdfs.HDFSBlobStore'and t
 
 
 
-akubra-hdfs is licensed under the Apache License 2.0
-
-       http://www.apache.org/licenses/LICENSE-2.0
+akubra-hdfs is licensed under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
