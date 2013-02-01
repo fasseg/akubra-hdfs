@@ -21,38 +21,27 @@ Copy the following dependencies to your fedora webapp's WEB-INF/lib directory:
 
 ### Configuration
 
-Open the file $FEDORA_HOME/server/config/spring/akubra-llstore.xml and edit the two beans 'fsObjectStore' 
-and 'fsDataStreamStore' to use the class 'de.fiz.akubra.hdfs.HDFSBlobStore'and the two beans 
-'fsObjectStoreMapper' and fsDatastreamStoreMapper' to be of class 'de.fiz.akubra.hdfs.HDFSIdMapper':
+Open the file ''$FEDORA_HOME/server/config/spring/akubra-llstore.xml'' and edit the two beans ''fsObjectStore'' and ''fsDataStreamStore'' to use the class ''de.fiz.akubra.hdfs.HDFSBlobStore'' and the two beans ''fsObjectStoreMapper'' and ''fsDatastreamStoreMapper'' to be of class ''de.fiz.akubra.hdfs.HDFSIdMapper''
 
 
-  ```<bean name="fsObjectStore"
-        class="de.fiz.akubra.hdfs.HDFSBlobStore"
-        singleton="true">
-    <constructor-arg value="hdfs://localhost:9000/fedora/objects"/>
-  </bean>```
-  
-   ```<bean name="fsObjectStoreMapper"
-        class="de.fiz.akubra.hdfs.HDFSIdMapper"
-        singleton="true">
-    <constructor-arg ref="fsObjectStore"/>
-  </bean>```
-  
+	<bean name="fsObjectStore" class="de.fiz.akubra.hdfs.HDFSBlobStore" singleton="true">
+		<constructor-arg value="hdfs://localhost:9000/fedora/objects"/>
+	</bean>
+	
+	<bean name="fsObjectStoreMapper" class="de.fiz.akubra.hdfs.HDFSIdMapper" singleton="true">
+		<constructor-arg ref="fsObjectStore"/>
+	</bean>
 
 
-  ```<bean name="fsDatastreamStore"
-        class="de.fiz.akubra.hdfs.HDFSBlobStore"
-        singleton="true">
-    <constructor-arg value="hdfs://localhost:9000/fedora/datastreams"/>
-  </bean>```
+	<bean name="fsDatastreamStore" class="de.fiz.akubra.hdfs.HDFSBlobStore" singleton="true">
+		<constructor-arg value="hdfs://localhost:9000/fedora/datastreams"/>
+	</bean>
 
-  ```<bean name="fsDatastreamStoreMapper"
-        class="de.fiz.akubra.hdfs.HDFSIdMapper"
-        singleton="true">
-    <constructor-arg ref="fsDatastreamStore"/>
-  </bean>```
+	<bean name="fsDatastreamStoreMapper" class="de.fiz.akubra.hdfs.HDFSIdMapper" singleton="true">
+		<constructor-arg ref="fsDatastreamStore"/>
+	  </bean>
 
 
-
+### License
 
 akubra-hdfs is licensed under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
