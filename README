@@ -6,8 +6,18 @@ as an underlying object and datastream storage.
 
 akubra-hdfs is still in an early development state and in no way ready for production use!
 
-In order to use akubra-hdfs with a fedora-commons repository it's enough to change the file 
-$FEDORA_HOME/server/config/akubra-llstore.xml and edit the two beans 'fsObjectStore' 
+Installation instructions (Fedora Commons 3.6.2, Hadoop 1.0.3):
+===============================================================
+
+Dependencies:
+Copy the following dependencies to your fedora webapp's WEB-INF/lib directory:
+ * akubra-hdfs-0.0.1-SNAPSHOT.jar (can be found in target/ after building the project)
+ * hadoop-core-1.0.3.jar from $HADOOP_HOME/
+ * hadoop-client-1.0.3.jar from $HADOOP_HOME/
+ * commons-configuration-1.6.jar from $HADOOP_HOME/lib/
+ * commons-lang-2.4.jar from $HADOOP_HOME/lib/ 
+
+Open the file $FEDORA_HOME/server/config/spring/akubra-llstore.xml and edit the two beans 'fsObjectStore' 
 and 'fsDataStreamStore' to use the class 'de.fiz.akubra.hdfs.HDFSBlobStore'and the two beans 
 'fsObjectStoreMapper' and fsDatastreamStoreMapper' to be of class 'de.fiz.akubra.hdfs.HDFSIdMapper':
 
@@ -39,6 +49,8 @@ and 'fsDataStreamStore' to use the class 'de.fiz.akubra.hdfs.HDFSBlobStore'and t
         singleton="true">
     <constructor-arg ref="fsDatastreamStore"/>
   </bean>
+
+
 
 
 akubra-hdfs is licensed under the Apache License 2.0
