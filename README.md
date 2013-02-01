@@ -21,7 +21,7 @@ Copy the following dependencies to your fedora webapp's WEB-INF/lib directory:
 
 ### Configuration
 
-Open the file '''$FEDORA_HOME/server/config/spring/akubra-llstore.xml''' and edit the two beans '''fsObjectStore''' and '''fsDataStreamStore''' to use the class '''de.fiz.akubra.hdfs.HDFSBlobStore''' and the two beans '''fsObjectStoreMapper''' and '''fsDatastreamStoreMapper''' to be of class '''de.fiz.akubra.hdfs.HDFSIdMapper'''
+Open the file ```$FEDORA_HOME/server/config/spring/akubra-llstore.xml``` and edit the two beans ```fsObjectStore``` and ```fsDataStreamStore``` to use the class ```de.fiz.akubra.hdfs.HDFSBlobStore``` and the two beans ```fsObjectStoreMapper``` and ```fsDatastreamStoreMapper``` to be of class ```de.fiz.akubra.hdfs.HDFSIdMapper```
 
 
 	<bean name="fsObjectStore" class="de.fiz.akubra.hdfs.HDFSBlobStore" singleton="true">
